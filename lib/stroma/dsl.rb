@@ -12,9 +12,17 @@ module Stroma
   #
   # ## Usage
   #
+  # Library authors create a DSL module that includes Stroma::DSL:
+  #
   # ```ruby
-  # class MyService
-  #   include Stroma::DSL
+  # module MyLib::DSL
+  #   def self.included(base)
+  #     base.include(Stroma::DSL)
+  #   end
+  # end
+  #
+  # class MyLib::Base
+  #   include MyLib::DSL
   #
   #   extensions do
   #     before :actions, MyExtension

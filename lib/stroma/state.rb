@@ -14,13 +14,21 @@ module Stroma
   #
   # ## Usage
   #
-  # Accessed via `stroma` method in service classes:
+  # Accessed via `stroma` method in classes that include Stroma::DSL.
+  # Library authors include Stroma::DSL in their DSL module:
   #
   # ```ruby
-  # class MyService
-  #   include Stroma::DSL
+  # # Library DSL module includes Stroma::DSL
+  # module MyLib::DSL
+  #   def self.included(base)
+  #     base.include(Stroma::DSL)
+  #   end
+  # end
   #
-  #   # In ClassMethods:
+  # # Library Base class includes library's DSL
+  # class MyLib::Base
+  #   include MyLib::DSL
+  #
   #   stroma.hooks.before(:actions)
   #   stroma.settings[:actions][:authorization][:method_name]
   # end

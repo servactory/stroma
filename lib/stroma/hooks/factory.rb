@@ -12,9 +12,12 @@ module Stroma
     #
     # ## Usage
     #
+    # Used within `extensions` block in classes that include Stroma::DSL:
+    #
     # ```ruby
-    # class ApplicationService::Base
-    #   include Stroma::DSL
+    # # Library Base class (includes Stroma::DSL via library's DSL module)
+    # class MyLib::Base
+    #   include MyLib::DSL  # MyLib::DSL includes Stroma::DSL
     #
     #   extensions do
     #     before :actions, ValidationModule
