@@ -124,6 +124,7 @@ PLATFORMS
 
 DEPENDENCIES
   appraisal (>= 2.5)
+  rake (>= 13.2)
   rspec (>= 3.13)
   servactory-rubocop (>= 0.9)
   stroma!
