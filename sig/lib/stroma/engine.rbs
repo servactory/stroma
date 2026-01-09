@@ -1,0 +1,4 @@
+module Stroma
+  class Engine < Rails::Engine
+  end
+end

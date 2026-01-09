@@ -1,0 +1,11 @@
+module Stroma
+  # Note: Entry uses Data.define but RBS should NOT inherit from Data
+  # per RBS documentation for proper type checking
+  class Entry
+    attr_reader key: Symbol
+    attr_reader extension: Module
+
+    def initialize: (Symbol key, Module extension) -> void
+                  | (key: Symbol, extension: Module) -> void
+  end
+end

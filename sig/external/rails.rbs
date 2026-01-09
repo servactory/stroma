@@ -1,0 +1,6 @@
+# Minimal Rails type stubs for Stroma engine support
+module Rails
+  class Engine
+    def self.isolate_namespace: (Module namespace) -> void
+  end
+end

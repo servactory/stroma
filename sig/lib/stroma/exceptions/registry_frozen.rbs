@@ -1,0 +1,6 @@
+module Stroma
+  module Exceptions
+    class RegistryFrozen < Base
+    end
+  end
+end

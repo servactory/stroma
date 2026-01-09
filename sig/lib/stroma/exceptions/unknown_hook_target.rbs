@@ -1,0 +1,6 @@
+module Stroma
+  module Exceptions
+    class UnknownHookTarget < Base
+    end
+  end
+end

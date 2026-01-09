@@ -1,0 +1,6 @@
+module Stroma
+  module Exceptions
+    class InvalidHookType < Base
+    end
+  end
+end

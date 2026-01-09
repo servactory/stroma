@@ -1,0 +1,19 @@
+module Stroma
+  module DSL
+    def self.included: (Class base) -> void
+
+    module ClassMethods
+      def self.extended: (Class base) -> void
+
+      # Note: child receives ClassMethods via inheritance, so it has stroma method
+      # Using untyped to allow stroma method call on child
+      def inherited: (untyped child) -> void
+
+      def stroma: () -> State
+
+      private
+
+      def extensions: () { () -> void } -> void
+    end
+  end
+end
