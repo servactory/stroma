@@ -16,7 +16,7 @@ module Stroma
 
       private
 
-      def extensions: () { [self: Hooks::Factory] () -> void } -> void
+      def extensions: () { [self: Hooks::Factory] -> void } -> void
     end
   end
 end
