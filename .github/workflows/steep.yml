@@ -21,7 +21,9 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.4"
-          bundler-cache: true
+
+      - name: Install dependencies
+        run: bundle install
 
       - name: Cache RBS collection
         uses: actions/cache@v4
