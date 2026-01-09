@@ -6,6 +6,9 @@ appraise "rails-5.1" do
   # warning: base64 was loaded from the standard library, but is not part of the default gems starting from Ruby 3.4.0.
   gem "base64", ">= 0.2"
 
+  # warning: bigdecimal was loaded from the standard library, but is not part of the default gems starting from Ruby 3.4.0.
+  gem "bigdecimal", ">= 3.1"
+
   # warning: mutex_m was loaded from the standard library, but is not part of the default gems starting from Ruby 3.4.0.
   gem "mutex_m", ">= 0.3"
 end
@@ -15,6 +18,9 @@ appraise "rails-5.2" do
 
   # warning: base64 was loaded from the standard library, but is not part of the default gems starting from Ruby 3.4.0.
   gem "base64", ">= 0.2"
+
+  # warning: bigdecimal was loaded from the standard library, but is not part of the default gems starting from Ruby 3.4.0.
+  gem "bigdecimal", ">= 3.1"
 
   # warning: mutex_m was loaded from the standard library, but is not part of the default gems starting from Ruby 3.4.0.
   gem "mutex_m", ">= 0.3"
@@ -27,6 +33,9 @@ appraise "rails-6.0" do
   # warning: base64 was loaded from the standard library, but is not part of the default gems starting from Ruby 3.4.0.
   gem "base64", ">= 0.2"
 
+  # warning: bigdecimal was loaded from the standard library, but is not part of the default gems starting from Ruby 3.4.0.
+  gem "bigdecimal", ">= 3.1"
+
   # warning: mutex_m was loaded from the standard library, but is not part of the default gems starting from Ruby 3.4.0.
   gem "mutex_m", ">= 0.3"
 end
@@ -37,6 +46,9 @@ appraise "rails-6.1" do
 
   # warning: base64 was loaded from the standard library, but is not part of the default gems starting from Ruby 3.4.0.
   gem "base64", ">= 0.2"
+
+  # warning: bigdecimal was loaded from the standard library, but is not part of the default gems starting from Ruby 3.4.0.
+  gem "bigdecimal", ">= 3.1"
 
   # warning: mutex_m was loaded from the standard library, but is not part of the default gems starting from Ruby 3.4.0.
   gem "mutex_m", ">= 0.3"
