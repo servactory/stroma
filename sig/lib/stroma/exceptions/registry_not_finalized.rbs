@@ -1,0 +1,6 @@
+module Stroma
+  module Exceptions
+    class RegistryNotFinalized < Base
+    end
+  end
+end

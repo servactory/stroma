@@ -1,0 +1,9 @@
+module Stroma
+  module VERSION
+    MAJOR: Integer
+    MINOR: Integer
+    PATCH: Integer
+    PRE: String?
+    STRING: String
+  end
+end

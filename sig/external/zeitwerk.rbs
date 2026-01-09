@@ -1,0 +1,15 @@
+# Minimal Zeitwerk type stubs for Stroma autoloader support
+module Zeitwerk
+  class Loader
+    def self.for_gem: (?warn_on_extra_files: bool) -> Loader
+
+    def ignore: (*String paths) -> void
+    def setup: () -> void
+
+    def inflector: () -> Inflector
+  end
+
+  class Inflector
+    def inflect: (Hash[String, String] inflections) -> void
+  end
+end
