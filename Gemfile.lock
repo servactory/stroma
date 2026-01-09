@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    stroma (0.1.0)
+    stroma (0.2.0)
       activesupport (>= 5.1)
       zeitwerk (>= 2.6)
 
