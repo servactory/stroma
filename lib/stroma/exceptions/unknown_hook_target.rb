@@ -15,8 +15,9 @@ module Stroma
     # Raised when using an invalid key in extensions block:
     #
     # ```ruby
-    # class ApplicationService::Base
-    #   include Stroma::DSL
+    # # Library Base class (includes Stroma::DSL via library's DSL module)
+    # class MyLib::Base
+    #   include MyLib::DSL  # MyLib::DSL includes Stroma::DSL
     #
     #   extensions do
     #     before :unknown_key, SomeModule
