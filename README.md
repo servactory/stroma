@@ -1,7 +1,7 @@
 <h1 align="center">Stroma</h1>
 
 <p align="center">
-  A hook system framework for building modular DSLs in Ruby.
+  A foundation for building modular, extensible DSLs in Ruby.
 </p>
 
 <p align="center">
@@ -25,23 +25,23 @@ See [stroma.servactory.com](https://stroma.servactory.com) for documentation, in
 
 ## 💡 Why Stroma?
 
-Building modular DSLs shouldn't require reinventing the wheel. Stroma provides a foundation for library authors to create extensible frameworks with:
+Building modular DSLs shouldn't require reinventing the wheel. Stroma provides a structured approach for library authors to compose DSL modules with:
 
-- 🔌 **Modular Architecture** - Register DSL modules independently, compose them flexibly
-- 🪝 **Hook System** - Insert extensions before/after any registered module
+- 🔌 **Module Registration** - Register DSL modules at boot time, compose them into a unified interface
+- 🧱 **Structured Composition** - Include all registered modules automatically via single DSL entry point
 - 🏛️ **Inheritance Safe** - Per-class state isolation with automatic deep copying
-- ⚙️ **Settings Hierarchy** - Three-level configuration storage for extensions
-- 🧩 **Composable Extensions** - Build cross-cutting concerns without modifying core DSL
+- 🪝 **Extension Hooks** - Optional before/after hooks for user customization
+- ⚙️ **Extension Settings** - Three-level hierarchical storage for extension configuration
 - 🔒 **Thread Safe** - Immutable registry after finalization, safe concurrent reads
 
 ## 🧬 Concept
 
-Stroma is a meta-framework for library authors. It provides the scaffolding to build DSL-driven frameworks like service objects, form objects, or decorators.
+Stroma is a foundation for library authors building DSL-driven frameworks (service objects, form objects, decorators, etc.).
 
 **Core lifecycle:**
 1. **Register** - Define DSL modules at boot time via `Stroma::Registry`
-2. **Include** - Classes include `Stroma::DSL` to gain all registered modules
-3. **Extend** - Add cross-cutting logic via `before`/`after` hooks
+2. **Compose** - Classes include `Stroma::DSL` to gain all registered modules automatically
+3. **Extend** (optional) - Users can add cross-cutting logic via `before`/`after` hooks
 
 ## 🚀 Quick Start
 

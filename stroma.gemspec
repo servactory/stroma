@@ -10,8 +10,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Anton Sokolov"]
   spec.email         = ["profox.rus@gmail.com"]
 
-  spec.summary       = "Stroma hook system"
-  spec.description   = spec.summary
+  spec.summary       = "Foundation for building modular, extensible DSLs"
+  spec.description   = "A structured approach to composing DSL modules for Ruby libraries with optional extension hooks"
   spec.homepage      = "https://github.com/servactory/stroma"
 
   spec.license       = "MIT"
