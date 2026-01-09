@@ -1,0 +1,38 @@
+name: Steep
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  steep:
+    name: Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+
+      - name: Cache RBS collection
+        uses: actions/cache@v4
+        with:
+          path: .gem_rbs_collection
+          key: rbs-collection-${{ hashFiles('rbs_collection.lock.yaml') }}
+          restore-keys: |
+            rbs-collection-
+
+      - name: Install RBS collection
+        run: bundle exec rbs collection install
+
+      - name: Run Steep type check
+        run: bundle exec steep check
