@@ -3,6 +3,9 @@ module Stroma
     def self.included: (Class base) -> void
 
     module ClassMethods
+      @stroma: State
+      @stroma_hooks_factory: Hooks::Factory
+
       def self.extended: (Class base) -> void
 
       # Note: child receives ClassMethods via inheritance, so it has stroma method
@@ -13,7 +16,7 @@ module Stroma
 
       private
 
-      def extensions: () { () -> void } -> void
+      def extensions: () { [self: Hooks::Factory] () -> void } -> void
     end
   end
 end
