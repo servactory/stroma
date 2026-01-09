@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
 require "zeitwerk"
+require "forwardable"
 require "stroma"
 
 # loader = Zeitwerk::Loader.new
 # loader.push_dir(File.expand_path("../examples", __dir__))
 # loader.setup
 
-# Dir[File.join(__dir__, "support", "**", "*.rb")].each { |file| require file }
+Dir[File.join(__dir__, "support", "**", "*.rb")].each { |file| require file }
 
 # I18n.load_path += Dir["#{File.expand_path('config/locales')}/*.yml"]
 
@@ -25,5 +26,9 @@ RSpec.configure do |config|
     # formatting an object. You can set length to nil to prevent RSpec from
     # doing truncation.
     c.max_formatted_output_length = nil
+  end
+
+  config.before(:suite) do
+    StromaTestRegistry.setup!
   end
 end
