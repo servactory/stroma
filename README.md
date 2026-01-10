@@ -48,7 +48,7 @@ Stroma is a foundation for library authors building DSL-driven frameworks (servi
 ### Installation
 
 ```ruby
-spec.add_dependency "stroma", ">= 0.2"
+spec.add_dependency "stroma", ">= 0.3"
 ```
 
 ### Define your library's DSL
