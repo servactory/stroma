@@ -9,7 +9,7 @@ module Stroma
   # Each matrix has its own registry - no conflicts with other libraries.
   #
   # Lifecycle:
-  # - Boot time: Matrix.new creates Registry, registers extensions
+  # - Boot time: Matrix.define creates Registry, registers extensions
   # - Boot time: finalize! freezes registry, dsl generates Module
   # - Boot time: freeze makes Matrix immutable
   # - Runtime: All structures frozen, no allocations

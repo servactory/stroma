@@ -3,7 +3,7 @@
 RSpec.describe Stroma::Hooks::Factory do
   let(:hooks) { Stroma::Hooks::Collection.new }
   let(:matrix) do
-    Stroma::Matrix.new(:test) do
+    Stroma::Matrix.define(:test) do
       register :inputs, Module.new
       register :outputs, Module.new
       register :actions, Module.new

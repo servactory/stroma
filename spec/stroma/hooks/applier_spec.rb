@@ -6,7 +6,7 @@ RSpec.describe Stroma::Hooks::Applier do
   let(:matrix) do
     inputs = inputs_dsl
     outputs = outputs_dsl
-    Stroma::Matrix.new(:test) do
+    Stroma::Matrix.define(:test) do
       register :inputs, inputs
       register :outputs, outputs
     end
