@@ -74,7 +74,7 @@ module Stroma
     #
     # @return [Module] The DSL module to include in base classes
     def dsl
-      @dsl_module ||= DSL::Generator.call(self)
+      @dsl ||= DSL::Generator.call(self)
     end
 
     # Returns all registered entries.

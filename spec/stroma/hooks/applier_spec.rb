@@ -48,7 +48,7 @@ RSpec.describe Stroma::Hooks::Applier do
       end
     end
 
-    context "with multiple hooks" do
+    context "with multiple hooks" do # rubocop:disable RSpec/MultipleMemoizedHelpers
       let(:before_inputs) { Module.new }
       let(:after_inputs) { Module.new }
       let(:before_outputs) { Module.new }

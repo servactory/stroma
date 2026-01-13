@@ -59,7 +59,7 @@ module Stroma
       # - extensions DSL for registering hooks
       #
       # @return [Module] The generated DSL module
-      def generate
+      def generate # rubocop:disable Metrics/MethodLength
         matrix = @matrix
         class_methods = build_class_methods
 
@@ -88,11 +88,9 @@ module Stroma
       # Builds the ClassMethods module.
       #
       # @return [Module] The ClassMethods module
-      def build_class_methods
+      def build_class_methods # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
         Module.new do
-          def stroma_matrix
-            @stroma_matrix
-          end
+          attr_reader :stroma_matrix
 
           def stroma
             @stroma ||= State.new

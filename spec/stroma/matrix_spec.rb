@@ -2,7 +2,7 @@
 
 RSpec.describe Stroma::Matrix do
   describe "#initialize" do
-    it "creates a frozen matrix with name" do
+    it "creates a frozen matrix with name", :aggregate_failures do
       matrix = described_class.new(:test) do
         register :inputs, Module.new
       end
@@ -11,7 +11,7 @@ RSpec.describe Stroma::Matrix do
       expect(matrix).to be_frozen
     end
 
-    it "finalizes registry automatically" do
+    it "finalizes registry automatically", :aggregate_failures do
       matrix = described_class.new(:test) do
         register :inputs, Module.new
       end
@@ -69,7 +69,10 @@ RSpec.describe Stroma::Matrix do
     end
 
     it "allows same keys in different matrices" do
-      expect { matrix_a; matrix_b }.not_to raise_error
+      expect do
+        matrix_a
+        matrix_b
+      end.not_to raise_error
     end
   end
 end

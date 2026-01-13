@@ -68,7 +68,7 @@ RSpec.describe Stroma::Registry do
       )
     end
 
-    it "returns entries after finalize" do
+    it "returns entries after finalize", :aggregate_failures do
       extension = Module.new
       registry.register(:inputs, extension)
       registry.finalize!

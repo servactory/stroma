@@ -37,7 +37,7 @@ RSpec.describe Stroma::DSL::Generator do
       expect(base_class).to respond_to(:inherited)
     end
 
-    it "includes all registered DSL modules" do
+    it "includes all registered DSL modules", :aggregate_failures do
       expect(base_class.ancestors).to include(inputs_dsl)
       expect(base_class.ancestors).to include(outputs_dsl)
     end

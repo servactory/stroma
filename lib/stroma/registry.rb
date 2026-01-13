@@ -47,8 +47,10 @@ module Stroma
     # @raise [Exceptions::KeyAlreadyRegistered] If key already exists
     # @return [void]
     def register(key, extension)
-      raise Exceptions::RegistryFrozen,
-            "Registry for #{@matrix_name.inspect} is finalized" if @finalized
+      if @finalized
+        raise Exceptions::RegistryFrozen,
+              "Registry for #{@matrix_name.inspect} is finalized"
+      end
 
       key = key.to_sym
       if @entries.any? { |e| e.key == key }
