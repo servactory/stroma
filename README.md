@@ -75,8 +75,24 @@ end
 
 ### Usage
 
+Create an intermediate class with lifecycle hooks:
+
 ```ruby
-class UserService < MyLib::Base
+class ApplicationService < MyLib::Base
+  # Add lifecycle hooks (optional)
+  extensions do
+    before :actions, ApplicationService::Extensions::Rollbackable::DSL
+  end
+end
+```
+
+Build services that inherit extension functionality:
+
+```ruby
+class UserService < ApplicationService
+  # DSL method from Rollbackable extension
+  on_rollback(...)
+
   input :email, type: String
 
   make :create_user
@@ -88,6 +104,8 @@ class UserService < MyLib::Base
   end
 end
 ```
+
+Extensions allow you to add cross-cutting concerns like transactions, authorization, and rollback support. See [extension examples](https://github.com/servactory/servactory/tree/main/examples/application_service/extensions) for implementation details.
 
 ## 🤝 Contributing
 
