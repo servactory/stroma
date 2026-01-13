@@ -4,50 +4,61 @@ module Stroma
   module DSL
     # Generates a DSL module scoped to a specific Matrix.
     #
-    # ## Design
+    # ## Purpose
     #
-    # The generated module:
-    # - Stores matrix reference on the module itself (via @stroma_matrix)
-    # - Uses ClassMethods module defined via const_set
-    # - Properly handles inheritance with state duplication
+    # Creates a module that:
+    # - Stores matrix reference on the module itself
+    # - Defines ClassMethods for service classes
+    # - Handles inheritance with state duplication
     #
-    # ## Memory Model
+    # Memory model:
+    # - Matrix owns @dsl_module (generated once, cached)
+    # - ServiceClass gets @stroma_matrix (same reference)
+    # - ServiceClass gets @stroma (unique State per class)
     #
+    # ## Usage
+    #
+    # ```ruby
+    # # Called internally by Matrix#dsl
+    # dsl_module = Stroma::DSL::Generator.call(matrix)
+    #
+    # # The generated module is included in base classes
+    # class MyLib::Base
+    #   include dsl_module
+    # end
     # ```
-    # Matrix (frozen)
-    #   └── @dsl_module (generated Module, cached)
-    #         ├── @stroma_matrix → Matrix
-    #         └── ClassMethods module
     #
-    # ServiceClass (includes dsl)
-    #   ├── @stroma_matrix → Matrix (same reference)
-    #   └── @stroma → State (unique per class)
-    #         ├── hooks → Collection (deep copied on inherit)
-    #         └── settings → Collection (deep copied on inherit)
-    # ```
+    # ## Integration
     #
-    # ## Boot vs Runtime
-    #
-    # Boot time (one-time):
-    # - Generator.call creates Module.new
-    # - ClassMethods module defined inside via const_set
-    # - First include sets up base class
-    #
-    # Runtime (no allocations):
-    # - stroma_matrix returns cached @stroma_matrix
-    # - stroma returns cached @stroma
-    # - extensions block only called at class definition time
+    # Called by Matrix#dsl to generate the DSL module.
+    # Generated module includes all registered extensions.
     class Generator
       class << self
+        # Generates a DSL module for the given matrix.
+        #
+        # @param matrix [Matrix] The matrix to generate DSL for
+        # @return [Module] The generated DSL module
         def call(matrix)
           new(matrix).generate
         end
       end
 
+      # Creates a new generator for the given matrix.
+      #
+      # @param matrix [Matrix] The matrix to generate DSL for
       def initialize(matrix)
         @matrix = matrix
       end
 
+      # Generates the DSL module.
+      #
+      # Creates a module with ClassMethods that provides:
+      # - stroma_matrix accessor for matrix reference
+      # - stroma accessor for per-class state
+      # - inherited hook for state duplication
+      # - extensions DSL for registering hooks
+      #
+      # @return [Module] The generated DSL module
       def generate
         matrix = @matrix
         class_methods = build_class_methods
@@ -74,6 +85,9 @@ module Stroma
 
       private
 
+      # Builds the ClassMethods module.
+      #
+      # @return [Module] The ClassMethods module
       def build_class_methods
         Module.new do
           def stroma_matrix

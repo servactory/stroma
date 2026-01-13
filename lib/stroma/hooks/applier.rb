@@ -4,11 +4,24 @@ module Stroma
   module Hooks
     # Applies registered hooks to a target class.
     #
-    # Uses the matrix's registry entries to determine hook order.
+    # ## Purpose
     #
-    # @example
-    #   applier = Applier.new(ChildService, hooks, matrix)
-    #   applier.apply!
+    # Includes hook extension modules into target class.
+    # Maintains order based on matrix registry entries.
+    # For each entry: before hooks first, then after hooks.
+    #
+    # ## Usage
+    #
+    # ```ruby
+    # # Called internally during class inheritance
+    # applier = Stroma::Hooks::Applier.new(ChildService, hooks, matrix)
+    # applier.apply!
+    # ```
+    #
+    # ## Integration
+    #
+    # Called by DSL::Generator's inherited hook.
+    # Creates a temporary instance that is garbage collected after apply!.
     class Applier
       # Creates a new applier for applying hooks to a class.
       #
