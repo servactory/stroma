@@ -2,8 +2,9 @@ module Stroma
   module Hooks
     class Factory
       @hooks: Collection
+      @matrix: Matrix
 
-      def initialize: (Collection hooks) -> void
+      def initialize: (Collection hooks, Matrix matrix) -> void
 
       def before: (Symbol key, *Module extensions) -> void
 

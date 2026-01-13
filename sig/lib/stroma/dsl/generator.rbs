@@ -1,0 +1,17 @@
+module Stroma
+  module DSL
+    class Generator
+      @matrix: Matrix
+
+      def self.call: (Matrix matrix) -> Module
+
+      def initialize: (Matrix matrix) -> void
+
+      def generate: () -> Module
+
+      private
+
+      def build_class_methods: () -> Module
+    end
+  end
+end

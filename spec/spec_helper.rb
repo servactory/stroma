@@ -27,8 +27,4 @@ RSpec.configure do |config|
     # doing truncation.
     c.max_formatted_output_length = nil
   end
-
-  config.before(:suite) do
-    StromaTestRegistry.setup!
-  end
 end

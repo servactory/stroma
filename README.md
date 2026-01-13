@@ -39,9 +39,9 @@ Building modular DSLs shouldn't require reinventing the wheel. Stroma provides a
 Stroma is a foundation for library authors building DSL-driven frameworks (service objects, form objects, decorators, etc.).
 
 **Core lifecycle:**
-1. **Register** - Define DSL modules at boot time via `Stroma::Registry`
-2. **Compose** - Classes include `Stroma::DSL` to gain all registered modules automatically
-3. **Extend** (optional) - Users can add cross-cutting logic via `before`/`after` hooks
+1. **Define** - Create a Matrix with DSL modules at boot time
+2. **Include** - Classes include the matrix's DSL to gain all modules
+3. **Extend** (optional) - Add cross-cutting logic via `before`/`after` hooks
 
 ## 🚀 Quick Start
 
@@ -55,16 +55,11 @@ spec.add_dependency "stroma", ">= 0.3"
 
 ```ruby
 module MyLib
-  module DSL
-    # Register DSL modules at load time
-    Stroma::Registry.register(:inputs, MyLib::Inputs::DSL)
-    Stroma::Registry.register(:actions, MyLib::Actions::DSL)
-    Stroma::Registry.finalize!
-
-    def self.included(base)
-      base.include(Stroma::DSL)
-    end
+  STROMA = Stroma::Matrix.define(:my_lib) do
+    register :inputs, MyLib::Inputs::DSL
+    register :actions, MyLib::Actions::DSL
   end
+  private_constant :STROMA
 end
 ```
 
@@ -73,7 +68,7 @@ end
 ```ruby
 module MyLib
   class Base
-    include MyLib::DSL
+    include STROMA.dsl
   end
 end
 ```
