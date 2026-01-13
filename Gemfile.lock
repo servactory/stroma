@@ -2,7 +2,6 @@ PATH
   remote: .
   specs:
     stroma (0.4.0)
-      activesupport (>= 5.1)
       zeitwerk (>= 2.6)
 
 GEM
