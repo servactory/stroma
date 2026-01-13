@@ -3,8 +3,9 @@ module Stroma
     class Applier
       @target_class: Class
       @hooks: Collection
+      @matrix: Matrix
 
-      def initialize: (Class target_class, Collection hooks) -> void
+      def initialize: (Class target_class, Collection hooks, Matrix matrix) -> void
 
       def apply!: () -> void
     end

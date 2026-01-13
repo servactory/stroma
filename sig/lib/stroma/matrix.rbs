@@ -1,0 +1,22 @@
+module Stroma
+  class Matrix
+    @name: Symbol
+    @registry: Registry
+    @dsl_module: Module?
+
+    attr_reader name: Symbol
+    attr_reader registry: Registry
+
+    def initialize: (Symbol | String name) ?{ () -> void } -> void
+
+    def register: (Symbol key, Module extension) -> void
+
+    def dsl: () -> Module
+
+    def entries: () -> Array[Entry]
+
+    def keys: () -> Array[Symbol]
+
+    def key?: (Symbol key) -> bool
+  end
+end

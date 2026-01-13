@@ -46,7 +46,7 @@ module Stroma
       #   before :actions, ValidationModule, AuthorizationModule
       def before(key, *extensions)
         validate_key!(key)
-        extensions.each { |ext| @hooks.add(:before, key, ext) }
+        extensions.each { |extension| @hooks.add(:before, key, extension) }
       end
 
       # Registers one or more after hooks for a target key.
@@ -60,7 +60,7 @@ module Stroma
       #   after :outputs, LoggingModule, AuditModule
       def after(key, *extensions)
         validate_key!(key)
-        extensions.each { |ext| @hooks.add(:after, key, ext) }
+        extensions.each { |extension| @hooks.add(:after, key, extension) }
       end
 
       private

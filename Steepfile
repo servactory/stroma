@@ -26,4 +26,8 @@ target :lib do
 
   # Complex splat delegation (*args) in fetch method causes type checking issues
   ignore "lib/stroma/settings/setting.rb"
+
+  # Dynamic module generation via Module.new causes type checking issues
+  # Steep can't analyze methods inside Module.new blocks
+  ignore "lib/stroma/dsl/generator.rb"
 end

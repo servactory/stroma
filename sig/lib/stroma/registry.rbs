@@ -1,19 +1,14 @@
 module Stroma
   class Registry
-    include Singleton
-
+    @matrix_name: Symbol
     @entries: Array[Entry]
     @finalized: bool
 
-    def self.register: (Symbol key, Module extension) -> void
-    def self.finalize!: () -> void
-    def self.entries: () -> Array[Entry]
-    def self.keys: () -> Array[Symbol]
-    def self.key?: (Symbol key) -> bool
+    attr_reader matrix_name: Symbol
 
-    def initialize: () -> void
+    def initialize: (Symbol | String matrix_name) -> void
 
-    def register: (Symbol key, Module extension) -> void
+    def register: (Symbol | String key, Module extension) -> void
 
     def finalize!: () -> void
 
@@ -21,7 +16,7 @@ module Stroma
 
     def keys: () -> Array[Symbol]
 
-    def key?: (Symbol key) -> bool
+    def key?: (Symbol | String key) -> bool
 
     private
 
