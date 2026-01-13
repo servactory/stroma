@@ -5,6 +5,8 @@ module Stroma
       @hooks: Collection
       @matrix: Matrix
 
+      def self.apply!: (Class target_class, Collection hooks, Matrix matrix) -> void
+
       def initialize: (Class target_class, Collection hooks, Matrix matrix) -> void
 
       def apply!: () -> void
