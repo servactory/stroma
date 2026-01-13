@@ -107,6 +107,10 @@ end
 
 Extensions allow you to add cross-cutting concerns like transactions, authorization, and rollback support. See [extension examples](https://github.com/servactory/servactory/tree/main/examples/application_service/extensions) for implementation details.
 
+## 💎 Projects Using Stroma
+
+- [Servactory](https://github.com/servactory/servactory) — Service objects framework for Ruby applications
+
 ## 🤝 Contributing
 
 We welcome contributions! Check out our [Contributing Guide](https://github.com/servactory/stroma/blob/main/CONTRIBUTING.md) to get started.
