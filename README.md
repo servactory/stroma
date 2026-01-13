@@ -55,7 +55,7 @@ spec.add_dependency "stroma", ">= 0.3"
 
 ```ruby
 module MyLib
-  STROMA = Stroma::Matrix.new(:my_lib) do
+  STROMA = Stroma::Matrix.define(:my_lib) do
     register :inputs, MyLib::Inputs::DSL
     register :actions, MyLib::Actions::DSL
   end

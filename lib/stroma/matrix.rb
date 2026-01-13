@@ -18,7 +18,7 @@ module Stroma
   #
   # ```ruby
   # module MyLib
-  #   STROMA = Stroma::Matrix.new(:my_lib) do
+  #   STROMA = Stroma::Matrix.define(:my_lib) do
   #     register :inputs, Inputs::DSL
   #     register :outputs, Outputs::DSL
   #   end
@@ -35,6 +35,26 @@ module Stroma
   # Stored as a constant in the library's namespace.
   # Owns the Registry and generates DSL module via DSL::Generator.
   class Matrix
+    class << self
+      # Defines a new Matrix with given name.
+      #
+      # Preferred way to create a Matrix. Semantically indicates
+      # that we are defining an immutable DSL scope.
+      #
+      # @param name [Symbol, String] The matrix identifier
+      # @yield Block for registering DSL modules
+      # @return [Matrix] The frozen matrix instance
+      #
+      # @example
+      #   STROMA = Stroma::Matrix.define(:my_lib) do
+      #     register :inputs, Inputs::DSL
+      #     register :outputs, Outputs::DSL
+      #   end
+      def define(name, &block)
+        new(name, &block)
+      end
+    end
+
     # @!attribute [r] name
     #   @return [Symbol] The matrix identifier
     # @!attribute [r] registry

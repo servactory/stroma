@@ -1,6 +1,32 @@
 # frozen_string_literal: true
 
 RSpec.describe Stroma::Matrix do
+  describe ".define" do
+    it "creates a frozen matrix with name", :aggregate_failures do
+      matrix = described_class.define(:test) do
+        register :inputs, Module.new
+      end
+
+      expect(matrix.name).to eq(:test)
+      expect(matrix).to be_frozen
+    end
+
+    it "is equivalent to .new" do
+      inputs_mod = Module.new
+
+      matrix_via_define = described_class.define(:test) do
+        register :inputs, inputs_mod
+      end
+
+      matrix_via_new = described_class.new(:test) do
+        register :inputs, inputs_mod
+      end
+
+      expect(matrix_via_define.name).to eq(matrix_via_new.name)
+      expect(matrix_via_define.keys).to eq(matrix_via_new.keys)
+    end
+  end
+
   describe "#initialize" do
     it "creates a frozen matrix with name", :aggregate_failures do
       matrix = described_class.new(:test) do

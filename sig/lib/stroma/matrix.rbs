@@ -8,6 +8,8 @@ module Stroma
     attr_reader registry: Registry
     attr_reader dsl: Module
 
+    def self.define: (Symbol | String name) ?{ () -> void } -> Matrix
+
     def initialize: (Symbol | String name) ?{ () -> void } -> void
 
     def register: (Symbol key, Module extension) -> void
