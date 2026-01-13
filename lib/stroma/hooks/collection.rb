@@ -28,6 +28,10 @@ module Stroma
     # Stored in Stroma::State and used by
     # Stroma::Hooks::Applier to apply hooks to classes.
     # Properly duplicated during class inheritance via initialize_dup.
+    #
+    # @note Thread Safety: Collection is mutable and NOT thread-safe.
+    #   Hook registration via `add` should only occur during class definition
+    #   (load time), which is typically single-threaded in Ruby applications.
     class Collection
       extend Forwardable
 

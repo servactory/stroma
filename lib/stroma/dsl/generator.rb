@@ -100,7 +100,7 @@ module Stroma
             super
             child.instance_variable_set(:@stroma_matrix, stroma_matrix)
             child.instance_variable_set(:@stroma, stroma.dup)
-            Hooks::Applier.new(child, child.stroma.hooks, stroma_matrix).apply!
+            Hooks::Applier.apply!(child, child.stroma.hooks, stroma_matrix)
           end
 
           private

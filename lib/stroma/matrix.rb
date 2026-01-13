@@ -51,11 +51,10 @@ module Stroma
     def initialize(name, &block)
       @name = name.to_sym
       @registry = Registry.new(@name)
-      @dsl_module = nil
 
       instance_eval(&block) if block_given?
       @registry.finalize!
-      dsl # Eager generation before freeze
+      @dsl = DSL::Generator.call(self)
       freeze
     end
 
@@ -70,11 +69,9 @@ module Stroma
 
     # Returns the generated DSL module.
     #
-    # Creates and caches the module on first call.
-    #
     # @return [Module] The DSL module to include in base classes
     def dsl
-      @dsl ||= DSL::Generator.call(self)
+      @dsl
     end
 
     # Returns all registered entries.

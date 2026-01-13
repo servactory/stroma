@@ -23,6 +23,20 @@ module Stroma
     # Called by DSL::Generator's inherited hook.
     # Creates a temporary instance that is garbage collected after apply!.
     class Applier
+      class << self
+        # Applies all registered hooks to the target class.
+        #
+        # Convenience class method that creates an applier and applies hooks.
+        #
+        # @param target_class [Class] The class to apply hooks to
+        # @param hooks [Collection] The hooks collection to apply
+        # @param matrix [Matrix] The matrix providing registry entries
+        # @return [void]
+        def apply!(target_class, hooks, matrix)
+          new(target_class, hooks, matrix).apply!
+        end
+      end
+
       # Creates a new applier for applying hooks to a class.
       #
       # @param target_class [Class] The class to apply hooks to

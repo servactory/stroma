@@ -25,6 +25,10 @@ module Stroma
     #
     # Created by DSL::Generator's extensions method.
     # Cached as @stroma_hooks_factory on each service class.
+    #
+    # @note Thread Safety: Factory uses memoization and is NOT thread-safe.
+    #   Hook registration via extensions block should only occur during class
+    #   definition (load time), which is typically single-threaded in Ruby.
     class Factory
       # Creates a new factory for registering hooks.
       #
