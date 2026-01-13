@@ -39,7 +39,9 @@ module Stroma
     #   @return [Symbol] The matrix identifier
     # @!attribute [r] registry
     #   @return [Registry] The registry of DSL modules
-    attr_reader :name, :registry
+    # @!attribute [r] dsl
+    #   @return [Module] The DSL module to include in base classes
+    attr_reader :name, :registry, :dsl
 
     # Creates a new Matrix with given name.
     #
@@ -65,13 +67,6 @@ module Stroma
     # @return [void]
     def register(key, extension)
       @registry.register(key, extension)
-    end
-
-    # Returns the generated DSL module.
-    #
-    # @return [Module] The DSL module to include in base classes
-    def dsl
-      @dsl
     end
 
     # Returns all registered entries.
