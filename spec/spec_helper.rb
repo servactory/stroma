@@ -28,7 +28,4 @@ RSpec.configure do |config|
     c.max_formatted_output_length = nil
   end
 
-  config.before(:suite) do
-    StromaTestRegistry.setup!
-  end
 end

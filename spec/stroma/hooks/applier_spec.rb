@@ -16,6 +16,19 @@ RSpec.describe Stroma::Hooks::Applier do
   let(:target_class) { Class.new }
   let(:applier) { described_class.new(target_class, hooks, matrix) }
 
+  describe ".apply!" do
+    let(:before_extension) { Module.new }
+
+    before do
+      hooks.add(:before, :inputs, before_extension)
+    end
+
+    it "applies hooks via class method" do
+      described_class.apply!(target_class, hooks, matrix)
+      expect(target_class.ancestors).to include(before_extension)
+    end
+  end
+
   describe "#apply!" do
     it "does nothing when hooks empty" do
       applier.apply!
