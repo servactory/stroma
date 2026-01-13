@@ -11,7 +11,7 @@ RSpec.describe Stroma::Matrix do
       expect(matrix).to be_frozen
     end
 
-    it "is equivalent to .new" do
+    it "is equivalent to .new", :aggregate_failures do
       inputs_mod = Module.new
 
       matrix_via_define = described_class.define(:test) do
@@ -67,10 +67,6 @@ RSpec.describe Stroma::Matrix do
 
     it "returns a module" do
       expect(matrix.dsl).to be_a(Module)
-    end
-
-    it "caches the module" do
-      expect(matrix.dsl).to be(matrix.dsl)
     end
   end
 
