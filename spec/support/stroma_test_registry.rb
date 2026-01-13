@@ -12,11 +12,13 @@ module StromaTestRegistry
   }.freeze
 
   def self.setup!
-    return if Stroma::Registry.instance.instance_variable_get(:@finalized)
+    # No global setup needed - Matrix is created per-test
+  end
 
-    MOCK_MODULES.each do |key, mod|
-      Stroma::Registry.register(key, mod)
+  def self.create_matrix(name = :test, keys: MOCK_MODULES.keys)
+    modules = MOCK_MODULES
+    Stroma::Matrix.new(name) do
+      keys.each { |key| register(key, modules[key]) }
     end
-    Stroma::Registry.finalize!
   end
 end

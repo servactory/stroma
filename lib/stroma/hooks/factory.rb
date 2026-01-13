@@ -4,39 +4,20 @@ module Stroma
   module Hooks
     # DSL interface for registering hooks in extensions block.
     #
-    # ## Purpose
+    # Validates target keys against the matrix's registry.
     #
-    # Provides the `before` and `after` methods used within the extensions
-    # block to register hooks. Validates that target keys exist in Registry
-    # before adding hooks.
-    #
-    # ## Usage
-    #
-    # Used within `extensions` block in classes that include Stroma::DSL:
-    #
-    # ```ruby
-    # # Library Base class (includes Stroma::DSL via library's DSL module)
-    # class MyLib::Base
-    #   include MyLib::DSL  # MyLib::DSL includes Stroma::DSL
-    #
-    #   extensions do
-    #     before :actions, ValidationModule
-    #     after :outputs, LoggingModule
-    #   end
-    # end
-    # ```
-    #
-    # ## Integration
-    #
-    # Created by DSL.extensions method and receives instance_eval of the block.
-    # Validates keys against Registry.keys and raises UnknownHookTarget
-    # for invalid keys.
+    # @example
+    #   factory = Factory.new(hooks, matrix)
+    #   factory.before(:actions, ValidationModule)
+    #   factory.after(:outputs, LoggingModule)
     class Factory
       # Creates a new factory for registering hooks.
       #
       # @param hooks [Collection] The hooks collection to add to
-      def initialize(hooks)
+      # @param matrix [Matrix] The matrix providing valid keys
+      def initialize(hooks, matrix)
         @hooks = hooks
+        @matrix = matrix
       end
 
       # Registers one or more before hooks for a target key.
@@ -49,7 +30,7 @@ module Stroma
       #   before :actions, ValidationModule, AuthorizationModule
       def before(key, *extensions)
         validate_key!(key)
-        extensions.each { |extension| @hooks.add(:before, key, extension) }
+        extensions.each { |ext| @hooks.add(:before, key, ext) }
       end
 
       # Registers one or more after hooks for a target key.
@@ -62,21 +43,21 @@ module Stroma
       #   after :outputs, LoggingModule, AuditModule
       def after(key, *extensions)
         validate_key!(key)
-        extensions.each { |extension| @hooks.add(:after, key, extension) }
+        extensions.each { |ext| @hooks.add(:after, key, ext) }
       end
 
       private
 
-      # Validates that the key exists in the Registry.
+      # Validates that the key exists in the matrix's registry.
       #
       # @param key [Symbol] The key to validate
       # @raise [Exceptions::UnknownHookTarget] If key is not registered
       def validate_key!(key)
-        return if Registry.key?(key)
+        return if @matrix.key?(key)
 
         raise Exceptions::UnknownHookTarget,
-              "Unknown hook target: #{key.inspect}. " \
-              "Valid keys: #{Registry.keys.map(&:inspect).join(', ')}"
+              "Unknown hook target #{key.inspect} for #{@matrix.name.inspect}. " \
+              "Valid: #{@matrix.keys.map(&:inspect).join(', ')}"
       end
     end
   end

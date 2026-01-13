@@ -4,33 +4,21 @@ module Stroma
   module Hooks
     # Applies registered hooks to a target class.
     #
-    # ## Purpose
+    # Uses the matrix's registry entries to determine hook order.
     #
-    # Iterates through all registered DSL modules and includes corresponding
-    # before/after hooks in the target class. For each registry entry,
-    # before hooks are included first, then after hooks.
-    #
-    # ## Usage
-    #
-    # ```ruby
-    # applier = Stroma::Hooks::Applier.new(ChildService, hooks)
-    # applier.apply!
-    # # ChildService now includes all hook modules
-    # ```
-    #
-    # ## Integration
-    #
-    # Called by Stroma::DSL.inherited after duplicating
-    # parent's configuration. Uses Registry.entries to determine
-    # hook application order.
+    # @example
+    #   applier = Applier.new(ChildService, hooks, matrix)
+    #   applier.apply!
     class Applier
       # Creates a new applier for applying hooks to a class.
       #
       # @param target_class [Class] The class to apply hooks to
       # @param hooks [Collection] The hooks collection to apply
-      def initialize(target_class, hooks)
+      # @param matrix [Matrix] The matrix providing registry entries
+      def initialize(target_class, hooks, matrix)
         @target_class = target_class
         @hooks = hooks
+        @matrix = matrix
       end
 
       # Applies all registered hooks to the target class.
@@ -39,21 +27,12 @@ module Stroma
       # then after hooks. Does nothing if hooks collection is empty.
       #
       # @return [void]
-      #
-      # @example
-      #   applier.apply!
-      #   # Target class now includes all extension modules
       def apply!
         return if @hooks.empty?
 
-        Registry.entries.each do |entry|
-          @hooks.before(entry.key).each do |hook|
-            @target_class.include(hook.extension)
-          end
-
-          @hooks.after(entry.key).each do |hook|
-            @target_class.include(hook.extension)
-          end
+        @matrix.entries.each do |entry|
+          @hooks.before(entry.key).each { |hook| @target_class.include(hook.extension) }
+          @hooks.after(entry.key).each { |hook| @target_class.include(hook.extension) }
         end
       end
     end

@@ -1,29 +1,53 @@
 # frozen_string_literal: true
 
-RSpec.describe Stroma::DSL do
-  describe ".included" do
-    let(:base_class) do
-      Class.new do
-        include Stroma::DSL
-      end
+RSpec.describe Stroma::DSL::Generator do
+  let(:inputs_dsl) { Module.new }
+  let(:outputs_dsl) { Module.new }
+
+  let(:matrix) do
+    inputs = inputs_dsl
+    outputs = outputs_dsl
+    Stroma::Matrix.new(:test) do
+      register :inputs, inputs
+      register :outputs, outputs
+    end
+  end
+
+  describe ".call" do
+    let(:dsl_module) { described_class.call(matrix) }
+
+    it "returns a module" do
+      expect(dsl_module).to be_a(Module)
     end
 
-    it "extends the class with ClassMethods", :aggregate_failures do
+    it "stores matrix reference" do
+      expect(dsl_module.stroma_matrix).to eq(matrix)
+    end
+  end
+
+  describe "generated module" do
+    let(:base_class) do
+      mtx = matrix
+      Class.new { include mtx.dsl }
+    end
+
+    it "extends class with ClassMethods", :aggregate_failures do
       expect(base_class).to respond_to(:stroma)
+      expect(base_class).to respond_to(:stroma_matrix)
       expect(base_class).to respond_to(:inherited)
     end
 
     it "includes all registered DSL modules" do
-      Stroma::Registry.entries.each do |entry|
-        expect(base_class.ancestors).to(
-          include(entry.extension),
-          "Expected ancestors to include #{entry.extension} (key: #{entry.key})"
-        )
-      end
+      expect(base_class.ancestors).to include(inputs_dsl)
+      expect(base_class.ancestors).to include(outputs_dsl)
     end
 
-    it "creates a stroma state" do
+    it "creates stroma state" do
       expect(base_class.stroma).to be_a(Stroma::State)
+    end
+
+    it "stores matrix reference on class" do
+      expect(base_class.stroma_matrix).to eq(matrix)
     end
   end
 
@@ -37,12 +61,13 @@ RSpec.describe Stroma::DSL do
     end
 
     let(:base_class) do
+      mtx = matrix
       ext = extension_module
       Class.new do
-        include Stroma::DSL
+        include mtx.dsl
 
         extensions do
-          before :actions, ext
+          before :inputs, ext
         end
       end
     end
@@ -63,35 +88,8 @@ RSpec.describe Stroma::DSL do
       expect(child_class.stroma).to be_a(Stroma::State)
     end
 
-    it "hooks are inherited" do
-      grandchild = Class.new(child_class)
-      expect(grandchild.ancestors).to include(extension_module)
-    end
-  end
-
-  describe "#extensions" do
-    let(:first_module) { Module.new }
-    let(:second_module) { Module.new }
-
-    let(:base_class) do
-      first_ext = first_module
-      second_ext = second_module
-      Class.new do
-        include Stroma::DSL
-
-        extensions do
-          before :actions, first_ext
-          after :outputs, second_ext
-        end
-      end
-    end
-
-    it "registers before hooks" do
-      expect(base_class.stroma.hooks.before(:actions).size).to eq(1)
-    end
-
-    it "registers after hooks" do
-      expect(base_class.stroma.hooks.after(:outputs).size).to eq(1)
+    it "preserves matrix reference" do
+      expect(child_class.stroma_matrix).to eq(matrix)
     end
   end
 
@@ -99,12 +97,13 @@ RSpec.describe Stroma::DSL do
     let(:extension_module) { Module.new }
 
     let(:parent_class) do
+      mtx = matrix
       ext = extension_module
       Class.new do
-        include Stroma::DSL
+        include mtx.dsl
 
         extensions do
-          before :actions, ext
+          before :inputs, ext
         end
       end
     end
@@ -125,21 +124,21 @@ RSpec.describe Stroma::DSL do
     end
 
     it "child inherits parent hooks", :aggregate_failures do
-      expect(child_class.stroma.hooks.before(:actions).size).to eq(1)
+      expect(child_class.stroma.hooks.before(:inputs).size).to eq(1)
       expect(child_class.ancestors).to include(extension_module)
     end
 
     it "parent modifications after child creation do not affect child" do
-      child_before_count = child_class.stroma.hooks.before(:inputs).size
+      child_before_count = child_class.stroma.hooks.before(:outputs).size
       new_extension = Module.new
 
       parent_class.class_eval do
         extensions do
-          before :inputs, new_extension
+          before :outputs, new_extension
         end
       end
 
-      expect(child_class.stroma.hooks.before(:inputs).size).to eq(child_before_count)
+      expect(child_class.stroma.hooks.before(:outputs).size).to eq(child_before_count)
     end
   end
 end

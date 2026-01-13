@@ -2,7 +2,14 @@
 
 RSpec.describe Stroma::Hooks::Factory do
   let(:hooks) { Stroma::Hooks::Collection.new }
-  let(:factory) { described_class.new(hooks) }
+  let(:matrix) do
+    Stroma::Matrix.new(:test) do
+      register :inputs, Module.new
+      register :outputs, Module.new
+      register :actions, Module.new
+    end
+  end
+  let(:factory) { described_class.new(hooks, matrix) }
   let(:first_module) { Module.new }
   let(:second_module) { Module.new }
 
@@ -21,8 +28,7 @@ RSpec.describe Stroma::Hooks::Factory do
     it "raises UnknownHookTarget for unknown key" do
       expect { factory.before(:unknown, first_module) }.to raise_error(
         Stroma::Exceptions::UnknownHookTarget,
-        "Unknown hook target: :unknown. " \
-        "Valid keys: :configuration, :info, :context, :inputs, :internals, :outputs, :actions"
+        "Unknown hook target :unknown for :test. Valid: :inputs, :outputs, :actions"
       )
     end
   end
@@ -42,15 +48,14 @@ RSpec.describe Stroma::Hooks::Factory do
     it "raises UnknownHookTarget for unknown key" do
       expect { factory.after(:unknown, first_module) }.to raise_error(
         Stroma::Exceptions::UnknownHookTarget,
-        "Unknown hook target: :unknown. " \
-        "Valid keys: :configuration, :info, :context, :inputs, :internals, :outputs, :actions"
+        "Unknown hook target :unknown for :test. Valid: :inputs, :outputs, :actions"
       )
     end
   end
 
   describe "valid keys" do
     it "accepts all registered keys" do
-      %i[configuration info context inputs internals outputs actions].each do |key|
+      %i[inputs outputs actions].each do |key|
         expect { factory.before(key, first_module) }.not_to raise_error
       end
     end
