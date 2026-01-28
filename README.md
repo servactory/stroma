@@ -1,4 +1,12 @@
-<h1 align="center">Stroma</h1>
+<p align="center">
+  <a href="https://servactory.com" target="_blank">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/servactory/stroma/main/.github/logo-dark.svg">
+      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/servactory/stroma/main/.github/logo-light.svg">
+      <img alt="Stroma" src="https://raw.githubusercontent.com/servactory/stroma/main/.github/logo-light.svg" width="350" height="70" style="max-width: 100%;">
+    </picture>
+  </a>
+</p>
 
 <p align="center">
   A foundation for building modular, extensible DSLs in Ruby.
