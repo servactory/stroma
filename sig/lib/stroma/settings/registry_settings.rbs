@@ -22,6 +22,10 @@ module Stroma
       def empty?: () -> bool
 
       def to_h: () -> Hash[Symbol, Hash[Symbol, untyped]]
+
+      protected
+
+      attr_reader storage: Hash[Symbol, Setting]
     end
   end
 end

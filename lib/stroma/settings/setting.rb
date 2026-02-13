@@ -69,7 +69,7 @@ module Stroma
       # @return [void]
       def initialize_dup(original)
         super
-        @data = deep_dup(original.instance_variable_get(:@data))
+        @data = deep_dup(original.data)
       end
 
       # Converts to a plain Hash.
@@ -92,6 +92,10 @@ module Stroma
       def fetch(key, *args, &block)
         @data.fetch(key.to_sym, *args, &block)
       end
+
+      protected
+
+      attr_reader :data
 
       private
 

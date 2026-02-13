@@ -22,6 +22,10 @@ module Stroma
       def empty?: () -> bool
 
       def size: () -> Integer
+
+      protected
+
+      attr_reader collection: Set[Hook]
     end
   end
 end
