@@ -4,8 +4,11 @@ module Stroma
   class Entry
     attr_reader key: Symbol
     attr_reader extension: Module
+    attr_reader matrix_name: Symbol
 
-    def initialize: (Symbol key, Module extension) -> void
-                  | (key: Symbol, extension: Module) -> void
+    def initialize: (Symbol key, Module extension, Symbol matrix_name) -> void
+                  | (key: Symbol, extension: Module, matrix_name: Symbol) -> void
+
+    def phase_method: () -> Symbol
   end
 end
