@@ -6,50 +6,32 @@ RSpec.describe Stroma::Hooks::Collection do
   let(:second_module) { Module.new }
 
   describe "#add" do
-    it "adds a hook to the collection" do
-      hooks.add(:before, :actions, first_module)
-      expect(hooks.before(:actions).size).to eq(1)
+    it "adds a wrap to the collection" do
+      hooks.add(:actions, first_module)
+      expect(hooks.for(:actions).size).to eq(1)
     end
 
-    it "allows multiple hooks for the same key" do
-      hooks.add(:before, :actions, first_module)
-      hooks.add(:before, :actions, second_module)
-      expect(hooks.before(:actions).size).to eq(2)
+    it "allows multiple wraps for the same key" do
+      hooks.add(:actions, first_module)
+      hooks.add(:actions, second_module)
+      expect(hooks.for(:actions).size).to eq(2)
     end
   end
 
-  describe "#before" do
+  describe "#for" do
     before do
-      hooks.add(:before, :actions, first_module)
-      hooks.add(:after, :actions, second_module)
-      hooks.add(:before, :outputs, second_module)
+      hooks.add(:actions, first_module)
+      hooks.add(:outputs, second_module)
     end
 
-    it "returns only before hooks for the specified key", :aggregate_failures do
-      result = hooks.before(:actions)
+    it "returns wraps for the specified key", :aggregate_failures do
+      result = hooks.for(:actions)
       expect(result.size).to eq(1)
       expect(result.first.extension).to eq(first_module)
     end
 
-    it "returns empty array for key without before hooks" do
-      expect(hooks.before(:inputs)).to eq([])
-    end
-  end
-
-  describe "#after" do
-    before do
-      hooks.add(:before, :actions, first_module)
-      hooks.add(:after, :actions, second_module)
-    end
-
-    it "returns only after hooks for the specified key", :aggregate_failures do
-      result = hooks.after(:actions)
-      expect(result.size).to eq(1)
-      expect(result.first.extension).to eq(second_module)
-    end
-
-    it "returns empty array for key without after hooks" do
-      expect(hooks.after(:inputs)).to eq([])
+    it "returns empty array for key without wraps" do
+      expect(hooks.for(:inputs)).to eq([])
     end
   end
 
@@ -58,8 +40,8 @@ RSpec.describe Stroma::Hooks::Collection do
       expect(hooks.empty?).to be(true)
     end
 
-    it "returns false after adding a hook" do
-      hooks.add(:before, :actions, first_module)
+    it "returns false after adding a wrap" do
+      hooks.add(:actions, first_module)
       expect(hooks.empty?).to be(false)
     end
   end
@@ -68,19 +50,19 @@ RSpec.describe Stroma::Hooks::Collection do
     let(:copy) { hooks.dup }
 
     before do
-      hooks.add(:before, :actions, first_module)
-      hooks.add(:after, :outputs, second_module)
+      hooks.add(:actions, first_module)
+      hooks.add(:outputs, second_module)
     end
 
-    it "creates a copy with the same hooks", :aggregate_failures do
-      expect(copy.before(:actions).size).to eq(1)
-      expect(copy.after(:outputs).size).to eq(1)
+    it "creates a copy with the same wraps", :aggregate_failures do
+      expect(copy.for(:actions).size).to eq(1)
+      expect(copy.for(:outputs).size).to eq(1)
     end
 
     it "creates an independent copy", :aggregate_failures do
-      copy.add(:before, :inputs, second_module)
-      expect(hooks.before(:inputs)).to be_empty
-      expect(copy.before(:inputs).size).to eq(1)
+      copy.add(:inputs, second_module)
+      expect(hooks.for(:inputs)).to be_empty
+      expect(copy.for(:inputs).size).to eq(1)
     end
   end
 
@@ -89,25 +71,25 @@ RSpec.describe Stroma::Hooks::Collection do
       expect(hooks.size).to eq(0)
     end
 
-    it "returns count of hooks" do
-      hooks.add(:before, :actions, first_module)
-      hooks.add(:after, :actions, second_module)
+    it "returns count of wraps" do
+      hooks.add(:actions, first_module)
+      hooks.add(:actions, second_module)
       expect(hooks.size).to eq(2)
     end
   end
 
   describe "#each" do
     before do
-      hooks.add(:before, :actions, first_module)
-      hooks.add(:after, :outputs, second_module)
+      hooks.add(:actions, first_module)
+      hooks.add(:outputs, second_module)
     end
 
-    it "yields each hook" do
+    it "yields each wrap" do
       expect(hooks.map(&:itself).size).to eq(2)
     end
 
-    it "yields Hook objects" do
-      expect(hooks.map(&:itself)).to all(be_a(Stroma::Hooks::Hook))
+    it "yields Wrap objects" do
+      expect(hooks.map(&:itself)).to all(be_a(Stroma::Hooks::Wrap))
     end
   end
 
