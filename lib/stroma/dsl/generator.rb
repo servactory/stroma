@@ -71,14 +71,12 @@ module Stroma
 
           entries.each do |entry|
             pm = entry.phase_method
-            define_method(pm) { |**| }
-            private pm
+            define_method(pm) { |**| } # rubocop:disable Lint/EmptyBlock
           end
 
           define_method(orchestrator_method) do |**args|
             entries.each { |entry| send(entry.phase_method, **args) }
           end
-          private orchestrator_method
 
           class << self
             attr_reader :stroma_matrix
@@ -130,6 +128,10 @@ module Stroma
           end
         end
       end
+
+      orchestrator_method
+
+      pm
     end
   end
 end

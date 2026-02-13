@@ -61,7 +61,7 @@ RSpec.describe Stroma::Matrix do
     end
 
     it "accepts names with digits" do
-      expect { described_class.new(:lib2) }.not_to raise_error
+      expect { described_class.new(:lib2) }.not_to raise_error # rubocop:disable Naming/VariableNumber
     end
 
     it "raises InvalidMatrixName for names starting with digit" do

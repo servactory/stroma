@@ -34,7 +34,7 @@ module Stroma
     #
     # Called by DSL::Generator's inherited hook.
     class Applier
-      TOWER_CACHE = {}
+      TOWER_CACHE = {}.freeze
       private_constant :TOWER_CACHE
 
       class << self
@@ -67,7 +67,7 @@ module Stroma
       # - Builds/fetches a tower module and prepends it
       #
       # @return [void]
-      def apply! # rubocop:disable Metrics/AbcSize
+      def apply! # rubocop:disable Metrics/MethodLength
         return if @hooks.empty?
 
         @matrix.entries.each do |entry|
@@ -101,7 +101,7 @@ module Stroma
       # @param entry [Entry] The entry to build tower for
       # @param wraps [Array<Wrap>] The wraps for this entry
       # @return [Module] The tower module
-      def build_tower(entry, wraps) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+      def build_tower(entry, wraps) # rubocop:disable Metrics/MethodLength
         tower = Module.new do
           wraps.reverse_each do |wrap|
             ext = wrap.extension

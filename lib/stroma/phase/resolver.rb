@@ -27,7 +27,7 @@ module Stroma
       # @param extension [Module] The extension (with Phase::Wrappable)
       # @param entry [Entry] The entry to resolve wraps for
       # @return [Module, nil] A module with phase method override, or nil
-      def self.resolve(extension, entry)
+      def self.resolve(extension, entry) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
         return nil unless extension.respond_to?(:stroma_phase_wraps)
 
         wraps = extension.stroma_phase_wraps.select { |w| w.target_key == entry.key }

@@ -32,7 +32,9 @@ RSpec.describe Stroma::Entry do
     let(:same_entry) { described_class.new(key: :test, extension: test_module, matrix_name: :my_lib) }
     let(:different_key_entry) { described_class.new(key: :other, extension: test_module, matrix_name: :my_lib) }
     let(:different_module) { Module.new }
-    let(:different_extension_entry) { described_class.new(key: :test, extension: different_module, matrix_name: :my_lib) }
+    let(:different_extension_entry) do
+      described_class.new(key: :test, extension: different_module, matrix_name: :my_lib)
+    end
     let(:different_matrix_entry) { described_class.new(key: :test, extension: test_module, matrix_name: :other_lib) }
 
     it "is equal to entry with same key, extension, and matrix_name" do

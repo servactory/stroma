@@ -16,6 +16,7 @@ RSpec.describe Stroma::Phase::Resolver do
       let(:extension) do
         Module.new do
           extend Stroma::Phase::Wrappable
+
           wrap_phase(:inputs) { |phase, **kwargs| phase.call(**kwargs) }
         end
       end
@@ -33,6 +34,7 @@ RSpec.describe Stroma::Phase::Resolver do
         l = log
         Module.new do
           extend Stroma::Phase::Wrappable
+
           wrap_phase(:actions) do |phase, **kwargs|
             l << :before
             phase.call(**kwargs)

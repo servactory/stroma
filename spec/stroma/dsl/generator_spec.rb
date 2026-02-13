@@ -35,7 +35,6 @@ RSpec.describe Stroma::DSL::Generator do
         expect(class_methods.inspect).to include("Stroma::DSL(test)")
         expect(class_methods.inspect).to include("ClassMethods")
       end
-
     end
   end
 
@@ -136,11 +135,11 @@ RSpec.describe Stroma::DSL::Generator do
   describe "inheritance" do
     let(:extension_module) do
       Module.new do
-        const_set(:ClassMethods, Module.new {
+        const_set(:ClassMethods, Module.new do
           def extension_method
             :extension_result
           end
-        })
+        end)
       end
     end
 

@@ -31,7 +31,7 @@ module Stroma
       # @yieldparam phase [Method] The original phase method (call via phase.call)
       # @return [void]
       def wrap_phase(key, &block)
-        stroma_phase_wraps << Wrap.new(target_key: key, block: block)
+        stroma_phase_wraps << Wrap.new(target_key: key, block:)
       end
 
       # Returns all registered phase wraps for this extension.
