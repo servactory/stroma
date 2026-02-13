@@ -1,0 +1,13 @@
+module Stroma
+  module Phase
+    # Note: Wrap uses Data.define but RBS should NOT inherit from Data
+    # per RBS documentation for proper type checking
+    class Wrap
+      attr_reader target_key: Symbol
+      attr_reader block: Proc
+
+      def initialize: (Symbol target_key, Proc block) -> void
+                    | (target_key: Symbol, block: Proc) -> void
+    end
+  end
+end
