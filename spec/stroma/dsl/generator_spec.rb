@@ -36,11 +36,6 @@ RSpec.describe Stroma::DSL::Generator do
         expect(class_methods.inspect).to include("ClassMethods")
       end
 
-      if Module.new.respond_to?(:set_temporary_name)
-        it "sets module name via set_temporary_name" do
-          expect(dsl_module.name).to eq("Stroma::DSL(test)")
-        end
-      end
     end
   end
 
@@ -70,12 +65,82 @@ RSpec.describe Stroma::DSL::Generator do
     end
   end
 
+  describe "phase stubs and orchestrator" do
+    let(:base_class) do
+      mtx = matrix
+      Class.new { include mtx.dsl }
+    end
+
+    it "defines phase methods as private" do
+      instance = base_class.new
+      expect(instance.private_methods).to include(:_test_phase_inputs!, :_test_phase_outputs!)
+    end
+
+    it "defines orchestrator as private" do
+      instance = base_class.new
+      expect(instance.private_methods).to include(:_test_phases_perform!)
+    end
+
+    it "orchestrator calls all phases in order" do
+      call_order = []
+      co = call_order
+
+      inputs_mod = Module.new do
+        define_method(:_test_phase_inputs!) do |**|
+          co << :inputs
+        end
+      end
+
+      outputs_mod = Module.new do
+        define_method(:_test_phase_outputs!) do |**|
+          co << :outputs
+        end
+      end
+
+      mtx = Stroma::Matrix.define(:test) do
+        register :inputs, inputs_mod
+        register :outputs, outputs_mod
+      end
+
+      klass = Class.new { include mtx.dsl }
+      klass.new.send(:_test_phases_perform!)
+
+      expect(call_order).to eq(%i[inputs outputs])
+    end
+
+    it "phase stubs are no-ops by default" do
+      expect { base_class.new.send(:_test_phase_inputs!) }.not_to raise_error
+    end
+
+    it "orchestrator passes kwargs to phases" do
+      received_kwargs = {}
+      rk = received_kwargs
+
+      inputs_mod = Module.new do
+        define_method(:_test_phase_inputs!) do |**kwargs|
+          rk.merge!(kwargs)
+        end
+      end
+
+      mtx = Stroma::Matrix.define(:test) do
+        register :inputs, inputs_mod
+      end
+
+      klass = Class.new { include mtx.dsl }
+      klass.new.send(:_test_phases_perform!, foo: :bar)
+
+      expect(received_kwargs).to eq(foo: :bar)
+    end
+  end
+
   describe "inheritance" do
     let(:extension_module) do
       Module.new do
-        def self.included(base)
-          base.define_singleton_method(:extension_method) { :extension_result }
-        end
+        const_set(:ClassMethods, Module.new {
+          def extension_method
+            :extension_result
+          end
+        })
       end
     end
 
@@ -86,18 +151,19 @@ RSpec.describe Stroma::DSL::Generator do
         include mtx.dsl
 
         extensions do
-          before :inputs, ext
+          wrap :inputs, ext
         end
       end
     end
 
     let(:child_class) { Class.new(base_class) }
 
-    it "applies hooks to child class" do
-      expect(child_class.ancestors).to include(extension_module)
+    it "applies wraps to child class" do
+      tower = child_class.ancestors.find { |a| a.inspect.include?("Stroma::Tower") }
+      expect(tower).not_to be_nil
     end
 
-    it "child has extension method", :aggregate_failures do
+    it "child has extension ClassMethods", :aggregate_failures do
       expect(child_class).to respond_to(:extension_method)
       expect(child_class.extension_method).to eq(:extension_result)
     end
@@ -122,7 +188,7 @@ RSpec.describe Stroma::DSL::Generator do
         include mtx.dsl
 
         extensions do
-          before :inputs, ext
+          wrap :inputs, ext
         end
       end
     end
@@ -134,30 +200,32 @@ RSpec.describe Stroma::DSL::Generator do
 
       child_class.class_eval do
         extensions do
-          after :outputs, child_extension
+          wrap :outputs, child_extension
         end
       end
 
-      expect(parent_class.stroma.hooks.after(:outputs)).to be_empty
-      expect(child_class.stroma.hooks.after(:outputs)).not_to be_empty
+      expect(parent_class.stroma.hooks.for(:outputs)).to be_empty
+      expect(child_class.stroma.hooks.for(:outputs)).not_to be_empty
     end
 
     it "child inherits parent hooks", :aggregate_failures do
-      expect(child_class.stroma.hooks.before(:inputs).size).to eq(1)
-      expect(child_class.ancestors).to include(extension_module)
+      expect(child_class.stroma.hooks.for(:inputs).size).to eq(1)
+
+      tower = child_class.ancestors.find { |a| a.inspect.include?("Stroma::Tower") }
+      expect(tower).not_to be_nil
     end
 
     it "parent modifications after child creation do not affect child" do
-      child_before_count = child_class.stroma.hooks.before(:outputs).size
+      child_before_count = child_class.stroma.hooks.for(:outputs).size
       new_extension = Module.new
 
       parent_class.class_eval do
         extensions do
-          before :outputs, new_extension
+          wrap :outputs, new_extension
         end
       end
 
-      expect(child_class.stroma.hooks.before(:outputs).size).to eq(child_before_count)
+      expect(child_class.stroma.hooks.for(:outputs).size).to eq(child_before_count)
     end
   end
 end

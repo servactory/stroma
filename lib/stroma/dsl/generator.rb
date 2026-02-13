@@ -8,6 +8,8 @@ module Stroma
     #
     # Creates a module that:
     # - Stores matrix reference on the module itself
+    # - Defines no-op phase stubs for all entries
+    # - Defines an orchestrator that calls phase methods sequentially
     # - Defines ClassMethods for service classes
     # - Handles inheritance with state duplication
     #
@@ -52,19 +54,31 @@ module Stroma
 
       # Generates the DSL module.
       #
-      # Creates a module with ClassMethods that provides:
-      # - stroma_matrix accessor for matrix reference
-      # - stroma accessor for per-class state
-      # - inherited hook for state duplication
-      # - extensions DSL for registering hooks
+      # Creates a module with:
+      # - No-op phase stubs for all entries (overridden by workspace modules)
+      # - An orchestrator method that calls phases sequentially
+      # - ClassMethods for stroma_matrix, stroma, inherited, extensions
       #
       # @return [Module] The generated DSL module
       def generate # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         matrix = @matrix
         class_methods = build_class_methods
+        orchestrator_method = :"_#{matrix.name}_phases_perform!"
+        entries = matrix.entries
 
         mod = Module.new do
           @stroma_matrix = matrix
+
+          entries.each do |entry|
+            pm = entry.phase_method
+            define_method(pm) { |**| }
+            private pm
+          end
+
+          define_method(orchestrator_method) do |**args|
+            entries.each { |entry| send(entry.phase_method, **args) }
+          end
+          private orchestrator_method
 
           class << self
             attr_reader :stroma_matrix
@@ -82,29 +96,13 @@ module Stroma
           const_set(:ClassMethods, class_methods)
         end
 
-        label_module(mod, "Stroma::DSL(#{matrix.name})")
-        label_module(class_methods, "Stroma::DSL(#{matrix.name})::ClassMethods")
+        Utils.label_module(mod, "Stroma::DSL(#{matrix.name})")
+        Utils.label_module(class_methods, "Stroma::DSL(#{matrix.name})::ClassMethods")
 
         mod
       end
 
       private
-
-      # Assigns a descriptive label to an anonymous module for debugging.
-      # Uses set_temporary_name (Ruby 3.3+) when available.
-      #
-      # TODO: Remove the else branch when Ruby 3.2 support is dropped.
-      #       The define_singleton_method fallback is a temporary workaround
-      #       that only affects #inspect and #to_s. Unlike set_temporary_name,
-      #       it does not set #name, so the module remains technically anonymous.
-      def label_module(mod, label)
-        if mod.respond_to?(:set_temporary_name)
-          mod.set_temporary_name(label)
-        else
-          mod.define_singleton_method(:inspect) { label }
-          mod.define_singleton_method(:to_s) { label }
-        end
-      end
 
       # Builds the ClassMethods module.
       #
