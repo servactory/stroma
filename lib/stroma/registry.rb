@@ -58,7 +58,7 @@ module Stroma
               "Key #{key.inspect} already registered in #{@matrix_name.inspect}"
       end
 
-      @entries << Entry.new(key:, extension:)
+      @entries << Entry.new(key:, extension:, matrix_name: @matrix_name)
     end
 
     # Finalizes the registry, preventing further registrations.

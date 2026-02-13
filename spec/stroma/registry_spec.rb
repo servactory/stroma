@@ -19,6 +19,14 @@ RSpec.describe Stroma::Registry do
       expect(registry.keys).to eq([:inputs])
     end
 
+    it "creates entry with matrix_name" do
+      extension = Module.new
+      registry.register(:inputs, extension)
+      registry.finalize!
+
+      expect(registry.entries.first.matrix_name).to eq(:test)
+    end
+
     it "raises KeyAlreadyRegistered for duplicate key" do
       registry.register(:inputs, Module.new)
 
