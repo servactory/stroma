@@ -59,7 +59,7 @@ module Stroma
       # @return [void]
       def initialize_dup(original)
         super
-        @collection = original.instance_variable_get(:@collection).dup
+        @collection = original.collection.dup
       end
 
       # Adds a new hook to the collection.
@@ -96,6 +96,10 @@ module Stroma
       def after(key)
         @collection.select { |hook| hook.after? && hook.target_key == key }
       end
+
+      protected
+
+      attr_reader :collection
     end
   end
 end

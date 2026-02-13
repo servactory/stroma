@@ -22,6 +22,9 @@ module Stroma
       def empty?: () -> bool
 
       def size: () -> Integer
+
+      # Protected in Ruby; declared here for Steep visibility in initialize_dup
+      attr_reader collection: Set[Hook]
     end
   end
 end

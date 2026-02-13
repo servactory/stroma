@@ -22,6 +22,9 @@ module Stroma
       def empty?: () -> bool
 
       def to_h: () -> Hash[Symbol, Hash[Symbol, Hash[Symbol, untyped]]]
+
+      # Protected in Ruby; declared here for Steep visibility in initialize_dup
+      attr_reader storage: Hash[Symbol, RegistrySettings]
     end
   end
 end

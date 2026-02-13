@@ -60,8 +60,8 @@ module Stroma
     # @return [void]
     def initialize_dup(original)
       super
-      @hooks = original.instance_variable_get(:@hooks).dup
-      @settings = original.instance_variable_get(:@settings).dup
+      @hooks = original.hooks.dup
+      @settings = original.settings.dup
     end
   end
 end

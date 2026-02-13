@@ -59,7 +59,7 @@ module Stroma
       # @return [void]
       def initialize_dup(original)
         super
-        @storage = original.instance_variable_get(:@storage).transform_values(&:dup)
+        @storage = original.storage.transform_values(&:dup)
       end
 
       # Accesses or creates a Setting for an extension.
@@ -81,6 +81,10 @@ module Stroma
       def to_h
         @storage.transform_values(&:to_h)
       end
+
+      protected
+
+      attr_reader :storage
     end
   end
 end
