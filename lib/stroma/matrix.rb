@@ -35,6 +35,9 @@ module Stroma
   # Stored as a constant in the library's namespace.
   # Owns the Registry and generates DSL module via DSL::Generator.
   class Matrix
+    VALID_NAME_PATTERN = /\A[a-z_][a-z0-9_]*\z/
+    private_constant :VALID_NAME_PATTERN
+
     class << self
       # Defines a new Matrix with given name.
       #
@@ -72,6 +75,7 @@ module Stroma
     # @yield Block for registering DSL modules
     def initialize(name, &block)
       @name = name.to_sym
+      validate_name!
       @registry = Registry.new(@name)
 
       instance_eval(&block) if block_given?
@@ -109,6 +113,19 @@ module Stroma
     # @return [Boolean] true if the key is registered
     def key?(key)
       registry.key?(key)
+    end
+
+    private
+
+    # Validates that the matrix name matches the required pattern.
+    #
+    # @raise [Exceptions::InvalidMatrixName] If name is invalid
+    # @return [void]
+    def validate_name!
+      return if VALID_NAME_PATTERN.match?(@name)
+
+      raise Exceptions::InvalidMatrixName,
+            "Invalid matrix name: #{@name.inspect}. Must match #{VALID_NAME_PATTERN.inspect}"
     end
   end
 end

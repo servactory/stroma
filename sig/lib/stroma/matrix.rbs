@@ -1,5 +1,7 @@
 module Stroma
   class Matrix
+    VALID_NAME_PATTERN: Regexp
+
     @name: Symbol
     @registry: Registry
     @dsl: Module
@@ -19,5 +21,9 @@ module Stroma
     def keys: () -> Array[Symbol]
 
     def key?: (Symbol key) -> bool
+
+    private
+
+    def validate_name!: () -> void
   end
 end

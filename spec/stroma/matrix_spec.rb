@@ -47,6 +47,52 @@ RSpec.describe Stroma::Matrix do
     end
   end
 
+  describe "validate_name!" do
+    it "accepts valid lowercase names" do
+      expect { described_class.new(:test) }.not_to raise_error
+    end
+
+    it "accepts names with underscores" do
+      expect { described_class.new(:my_lib) }.not_to raise_error
+    end
+
+    it "accepts names starting with underscore" do
+      expect { described_class.new(:_private) }.not_to raise_error
+    end
+
+    it "accepts names with digits" do
+      expect { described_class.new(:lib2) }.not_to raise_error
+    end
+
+    it "raises InvalidMatrixName for names starting with digit" do
+      expect { described_class.new(:"123invalid") }.to raise_error(
+        Stroma::Exceptions::InvalidMatrixName,
+        "Invalid matrix name: :\"123invalid\". Must match /\\A[a-z_][a-z0-9_]*\\z/"
+      )
+    end
+
+    it "raises InvalidMatrixName for names with uppercase" do
+      expect { described_class.new(:MyLib) }.to raise_error(
+        Stroma::Exceptions::InvalidMatrixName,
+        "Invalid matrix name: :MyLib. Must match /\\A[a-z_][a-z0-9_]*\\z/"
+      )
+    end
+
+    it "raises InvalidMatrixName for names with dashes" do
+      expect { described_class.new(:"my-lib") }.to raise_error(
+        Stroma::Exceptions::InvalidMatrixName,
+        "Invalid matrix name: :\"my-lib\". Must match /\\A[a-z_][a-z0-9_]*\\z/"
+      )
+    end
+
+    it "raises InvalidMatrixName for empty name" do
+      expect { described_class.new(:"") }.to raise_error(
+        Stroma::Exceptions::InvalidMatrixName,
+        "Invalid matrix name: :\"\". Must match /\\A[a-z_][a-z0-9_]*\\z/"
+      )
+    end
+  end
+
   describe "#register" do
     it "delegates to registry" do
       matrix = described_class.new(:test) do
