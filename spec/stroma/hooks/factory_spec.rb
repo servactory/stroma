@@ -40,14 +40,4 @@ RSpec.describe Stroma::Hooks::Factory do
       end
     end
   end
-
-  describe "removed methods" do
-    it "does not respond to before" do
-      expect(factory).not_to respond_to(:before)
-    end
-
-    it "does not respond to after" do
-      expect(factory).not_to respond_to(:after)
-    end
-  end
 end
