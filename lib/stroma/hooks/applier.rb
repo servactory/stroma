@@ -34,7 +34,7 @@ module Stroma
     #
     # Called by DSL::Generator's inherited hook.
     class Applier
-      TOWER_CACHE = {}.freeze
+      TOWER_CACHE = {} # rubocop:disable Style/MutableConstant
       private_constant :TOWER_CACHE
 
       class << self
