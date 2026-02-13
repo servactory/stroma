@@ -109,4 +109,10 @@ RSpec.describe Stroma::Settings::RegistrySettings do
       expect(settings[:authorization].key?(:new_key)).to be(false)
     end
   end
+
+  describe "protected interface" do
+    it "does not expose storage publicly" do
+      expect { settings.storage }.to raise_error(NoMethodError)
+    end
+  end
 end

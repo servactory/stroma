@@ -138,4 +138,10 @@ RSpec.describe Stroma::Settings::Collection do
       expect(settings[:actions][:transactional][:class]).to eq("ActiveRecord::Base")
     end
   end
+
+  describe "protected interface" do
+    it "does not expose storage publicly" do
+      expect { settings.storage }.to raise_error(NoMethodError)
+    end
+  end
 end

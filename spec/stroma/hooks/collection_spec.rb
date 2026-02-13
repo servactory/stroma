@@ -110,4 +110,10 @@ RSpec.describe Stroma::Hooks::Collection do
       expect(hooks.map(&:itself)).to all(be_a(Stroma::Hooks::Hook))
     end
   end
+
+  describe "protected interface" do
+    it "does not expose collection publicly" do
+      expect { hooks.collection }.to raise_error(NoMethodError)
+    end
+  end
 end

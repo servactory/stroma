@@ -146,4 +146,10 @@ RSpec.describe Stroma::Settings::Setting do
       expect(setting[:list][1][0]).to eq(2)
     end
   end
+
+  describe "protected interface" do
+    it "does not expose data publicly" do
+      expect { setting.data }.to raise_error(NoMethodError)
+    end
+  end
 end
