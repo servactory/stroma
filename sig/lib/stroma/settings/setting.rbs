@@ -32,8 +32,7 @@ module Stroma
                | (Symbol key, untyped default) -> untyped
                | (Symbol key) { (Symbol) -> untyped } -> untyped
 
-      protected
-
+      # Protected in Ruby; declared here for Steep visibility in initialize_dup
       attr_reader data: Hash[Symbol, untyped]
 
       private

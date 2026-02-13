@@ -23,8 +23,7 @@ module Stroma
 
       def to_h: () -> Hash[Symbol, Hash[Symbol, Hash[Symbol, untyped]]]
 
-      protected
-
+      # Protected in Ruby; declared here for Steep visibility in initialize_dup
       attr_reader storage: Hash[Symbol, RegistrySettings]
     end
   end
