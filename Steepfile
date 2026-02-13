@@ -22,7 +22,7 @@ target :lib do
 
   # Data.define with block causes Steep type checking issues
   # See: https://github.com/ruby/rbs/blob/master/docs/data_and_struct.md
-  ignore "lib/stroma/hooks/hook.rb"
+  ignore "lib/stroma/entry.rb"
 
   # Complex splat delegation (*args) in fetch method causes type checking issues
   ignore "lib/stroma/settings/setting.rb"
@@ -30,4 +30,6 @@ target :lib do
   # Dynamic module generation via Module.new causes type checking issues
   # Steep can't analyze methods inside Module.new blocks
   ignore "lib/stroma/dsl/generator.rb"
+  ignore "lib/stroma/hooks/applier.rb"
+  ignore "lib/stroma/phase/resolver.rb"
 end
