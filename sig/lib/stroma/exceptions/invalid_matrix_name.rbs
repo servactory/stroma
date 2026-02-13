@@ -1,6 +1,6 @@
 module Stroma
   module Exceptions
-    class InvalidHookType < Base
+    class InvalidMatrixName < Base
     end
   end
 end
