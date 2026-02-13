@@ -11,6 +11,8 @@ module Stroma
 
       private
 
+      def label_module: (Module mod, String label) -> void
+
       def build_class_methods: () -> Module
     end
   end

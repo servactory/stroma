@@ -23,6 +23,25 @@ RSpec.describe Stroma::DSL::Generator do
     it "stores matrix reference" do
       expect(dsl_module.stroma_matrix).to eq(matrix)
     end
+
+    describe "module labeling" do
+      it "labels DSL module with matrix name", :aggregate_failures do
+        expect(dsl_module.inspect).to eq("Stroma::DSL(test)")
+        expect(dsl_module.to_s).to eq("Stroma::DSL(test)")
+      end
+
+      it "labels ClassMethods with matrix name", :aggregate_failures do
+        class_methods = dsl_module.const_get(:ClassMethods)
+        expect(class_methods.inspect).to include("Stroma::DSL(test)")
+        expect(class_methods.inspect).to include("ClassMethods")
+      end
+
+      if Module.new.respond_to?(:set_temporary_name)
+        it "sets module name via set_temporary_name" do
+          expect(dsl_module.name).to eq("Stroma::DSL(test)")
+        end
+      end
+    end
   end
 
   describe "generated module" do
