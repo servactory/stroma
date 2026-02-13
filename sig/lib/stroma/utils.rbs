@@ -1,0 +1,9 @@
+module Stroma
+  module Utils
+    def self.label_module: (Module mod, String label) -> void
+
+    private
+
+    def label_module: (Module mod, String label) -> void
+  end
+end
