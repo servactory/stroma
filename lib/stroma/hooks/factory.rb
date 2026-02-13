@@ -2,11 +2,11 @@
 
 module Stroma
   module Hooks
-    # DSL interface for registering hooks in extensions block.
+    # DSL interface for registering wraps in extensions block.
     #
     # ## Purpose
     #
-    # Provides before/after DSL methods for hook registration.
+    # Provides wrap DSL method for hook registration.
     # Validates target keys against the matrix's registry.
     # Delegates to Hooks::Collection for storage.
     #
@@ -15,8 +15,7 @@ module Stroma
     # ```ruby
     # class MyService < MyLib::Base
     #   extensions do
-    #     before :actions, ValidationModule, AuthModule
-    #     after :outputs, LoggingModule
+    #     wrap :actions, ValidationModule, AuthModule
     #   end
     # end
     # ```
@@ -26,7 +25,7 @@ module Stroma
     # Created by DSL::Generator's extensions method.
     # Cached as @stroma_hooks_factory on each service class.
     class Factory
-      # Creates a new factory for registering hooks.
+      # Creates a new factory for registering wraps.
       #
       # @param hooks [Collection] The hooks collection to add to
       # @param matrix [Matrix] The matrix providing valid keys
@@ -35,32 +34,18 @@ module Stroma
         @matrix = matrix
       end
 
-      # Registers one or more before hooks for a target key.
+      # Registers one or more wraps for a target key.
       #
-      # @param key [Symbol] The registry key to hook before
+      # @param key [Symbol] The registry key to wrap
       # @param extensions [Array<Module>] Extension modules to include
       # @raise [Exceptions::UnknownHookTarget] If key is not registered
       # @return [void]
       #
       # @example
-      #   before :actions, ValidationModule, AuthorizationModule
-      def before(key, *extensions)
+      #   wrap :actions, ValidationModule, AuthorizationModule
+      def wrap(key, *extensions)
         validate_key!(key)
-        extensions.each { |extension| @hooks.add(:before, key, extension) }
-      end
-
-      # Registers one or more after hooks for a target key.
-      #
-      # @param key [Symbol] The registry key to hook after
-      # @param extensions [Array<Module>] Extension modules to include
-      # @raise [Exceptions::UnknownHookTarget] If key is not registered
-      # @return [void]
-      #
-      # @example
-      #   after :outputs, LoggingModule, AuditModule
-      def after(key, *extensions)
-        validate_key!(key)
-        extensions.each { |extension| @hooks.add(:after, key, extension) }
+        extensions.each { |extension| @hooks.add(key, extension) }
       end
 
       private
