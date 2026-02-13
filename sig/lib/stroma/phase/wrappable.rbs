@@ -1,0 +1,11 @@
+module Stroma
+  module Phase
+    module Wrappable
+      @stroma_phase_wraps: Array[Wrap]
+
+      def wrap_phase: (Symbol key) { (Method, **untyped) -> void } -> void
+
+      def stroma_phase_wraps: () -> Array[Wrap]
+    end
+  end
+end
