@@ -27,12 +27,12 @@ RSpec.describe Stroma::State do
     let(:copy) { state.dup }
 
     before do
-      state.hooks.add(:before, :actions, test_module)
+      state.hooks.add(:actions, test_module)
       state.settings[:actions][:authorization][:method_name] = :authorize
     end
 
     it "creates a copy with the same hooks" do
-      expect(copy.hooks.before(:actions).size).to eq(1)
+      expect(copy.hooks.for(:actions).size).to eq(1)
     end
 
     it "creates a copy with the same settings" do
@@ -40,10 +40,10 @@ RSpec.describe Stroma::State do
     end
 
     it "creates an independent copy for hooks", :aggregate_failures do
-      copy.hooks.add(:after, :outputs, test_module)
+      copy.hooks.add(:outputs, test_module)
 
-      expect(state.hooks.after(:outputs)).to be_empty
-      expect(copy.hooks.after(:outputs).size).to eq(1)
+      expect(state.hooks.for(:outputs)).to be_empty
+      expect(copy.hooks.for(:outputs).size).to eq(1)
     end
 
     it "creates an independent copy for settings", :aggregate_failures do

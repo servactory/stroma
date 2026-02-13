@@ -6,7 +6,7 @@ module Stroma
   # ## Purpose
   #
   # Central container that stores:
-  # - Hooks collection for before/after extension points
+  # - Hooks collection for wrap extension points
   # - Settings collection for extension-specific configuration
   #
   # Each service class has its own State instance, duplicated during
@@ -29,7 +29,7 @@ module Stroma
   # class MyLib::Base
   #   include MyLib::DSL
   #
-  #   stroma.hooks.before(:actions)
+  #   stroma.hooks.for(:actions)
   #   stroma.settings[:actions][:authorization][:method_name]
   # end
   # ```
@@ -40,7 +40,7 @@ module Stroma
   # Duplicated in DSL.inherited to provide inheritance isolation.
   class State
     # @!attribute [r] hooks
-    #   @return [Hooks::Collection] The hooks collection for this class
+    #   @return [Hooks::Collection] The wraps collection for this class
     # @!attribute [r] settings
     #   @return [Settings::Collection] The settings collection for this class
     attr_reader :hooks, :settings
