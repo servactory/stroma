@@ -34,9 +34,6 @@ module Stroma
     #
     # Called by DSL::Generator's inherited hook.
     class Applier
-      TOWER_CACHE = {} # rubocop:disable Style/MutableConstant
-      private_constant :TOWER_CACHE
-
       class << self
         # Applies all registered wraps to the target class.
         #
@@ -46,6 +43,15 @@ module Stroma
         # @return [void]
         def apply!(target_class, hooks, matrix)
           new(target_class, hooks, matrix).apply!
+        end
+
+        private
+
+        # Returns the tower cache, lazily initialized.
+        #
+        # @return [Hash] The cache mapping [matrix_name, key, object_ids] to tower modules
+        def tower_cache
+          @tower_cache ||= {}
         end
       end
 
@@ -93,7 +99,7 @@ module Stroma
       # @return [Module] The tower module
       def fetch_or_build_tower(entry, wraps)
         cache_key = [entry.matrix_name, entry.key, wraps.map { |w| w.extension.object_id }]
-        TOWER_CACHE[cache_key] ||= build_tower(entry, wraps)
+        self.class.send(:tower_cache)[cache_key] ||= build_tower(entry, wraps)
       end
 
       # Builds a tower module from wraps for a specific entry.

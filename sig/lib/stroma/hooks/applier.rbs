@@ -1,13 +1,14 @@
 module Stroma
   module Hooks
     class Applier
-      TOWER_CACHE: Hash[Array[untyped], Module]
-
       @target_class: Class
       @hooks: Collection
       @matrix: Matrix
 
       def self.apply!: (Class target_class, Collection hooks, Matrix matrix) -> void
+
+      # Class-level tower cache (private class method)
+      def self.tower_cache: () -> Hash[Array[untyped], Module]
 
       def initialize: (Class target_class, Collection hooks, Matrix matrix) -> void
 
