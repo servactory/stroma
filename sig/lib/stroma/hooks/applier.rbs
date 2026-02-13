@@ -1,6 +1,8 @@
 module Stroma
   module Hooks
     class Applier
+      TOWER_CACHE: Hash[Array[untyped], Module]
+
       @target_class: Class
       @hooks: Collection
       @matrix: Matrix
@@ -10,6 +12,12 @@ module Stroma
       def initialize: (Class target_class, Collection hooks, Matrix matrix) -> void
 
       def apply!: () -> void
+
+      private
+
+      def fetch_or_build_tower: (Entry entry, Array[Wrap] wraps) -> Module
+
+      def build_tower: (Entry entry, Array[Wrap] wraps) -> Module
     end
   end
 end

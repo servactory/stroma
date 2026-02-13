@@ -2,33 +2,45 @@
 
 module Stroma
   module Hooks
-    # Applies registered hooks to a target class.
+    # Applies registered wraps to a target class via per-entry towers.
     #
     # ## Purpose
     #
-    # Includes hook extension modules into target class.
-    # Maintains order based on matrix registry entries.
-    # For each entry: before hooks first, then after hooks.
+    # For each entry with wraps, builds a tower module that contains
+    # all wrap extensions. Towers are prepended to the target class.
+    # ClassMethods from wrap extensions are extended directly.
+    #
+    # ## Tower convention
+    #
+    # Wrap extensions follow the ClassMethods/InstanceMethods convention:
+    # - `ClassMethods` — extended directly on target_class (for DSL methods)
+    # - `InstanceMethods` — included in tower module, prepended on target_class
+    # - Phase::Resolver — checked first for generic wrappable extensions
+    # - Plain module (no nested constants) — included in tower as-is
+    #
+    # ## Caching
+    #
+    # Towers are cached by [matrix_name, entry_key, extension_object_ids]
+    # since they are built at boot time and reused across subclasses.
     #
     # ## Usage
     #
     # ```ruby
     # # Called internally during class inheritance
-    # applier = Stroma::Hooks::Applier.new(ChildService, hooks, matrix)
-    # applier.apply!
+    # Stroma::Hooks::Applier.apply!(ChildService, hooks, matrix)
     # ```
     #
     # ## Integration
     #
     # Called by DSL::Generator's inherited hook.
-    # Creates a temporary instance that is garbage collected after apply!.
     class Applier
+      TOWER_CACHE = {}
+      private_constant :TOWER_CACHE
+
       class << self
-        # Applies all registered hooks to the target class.
+        # Applies all registered wraps to the target class.
         #
-        # Convenience class method that creates an applier and applies hooks.
-        #
-        # @param target_class [Class] The class to apply hooks to
+        # @param target_class [Class] The class to apply wraps to
         # @param hooks [Collection] The hooks collection to apply
         # @param matrix [Matrix] The matrix providing registry entries
         # @return [void]
@@ -37,9 +49,9 @@ module Stroma
         end
       end
 
-      # Creates a new applier for applying hooks to a class.
+      # Creates a new applier for applying wraps to a class.
       #
-      # @param target_class [Class] The class to apply hooks to
+      # @param target_class [Class] The class to apply wraps to
       # @param hooks [Collection] The hooks collection to apply
       # @param matrix [Matrix] The matrix providing registry entries
       def initialize(target_class, hooks, matrix)
@@ -48,19 +60,63 @@ module Stroma
         @matrix = matrix
       end
 
-      # Applies all registered hooks to the target class.
+      # Applies all registered wraps to the target class.
       #
-      # For each registry entry, includes before hooks first,
-      # then after hooks. Does nothing if hooks collection is empty.
+      # For each entry with wraps:
+      # - Extends ClassMethods directly on target class
+      # - Builds/fetches a tower module and prepends it
       #
       # @return [void]
-      def apply!
+      def apply! # rubocop:disable Metrics/AbcSize
         return if @hooks.empty?
 
         @matrix.entries.each do |entry|
-          @hooks.before(entry.key).each { |hook| @target_class.include(hook.extension) }
-          @hooks.after(entry.key).each { |hook| @target_class.include(hook.extension) }
+          wraps_for_entry = @hooks.for(entry.key)
+          next if wraps_for_entry.empty?
+
+          wraps_for_entry.each do |wrap|
+            ext = wrap.extension
+            @target_class.extend(ext::ClassMethods) if ext.const_defined?(:ClassMethods, false)
+          end
+
+          tower = fetch_or_build_tower(entry, wraps_for_entry)
+          @target_class.prepend(tower)
         end
+      end
+
+      private
+
+      # Fetches a cached tower or builds a new one.
+      #
+      # @param entry [Entry] The entry to build tower for
+      # @param wraps [Array<Wrap>] The wraps for this entry
+      # @return [Module] The tower module
+      def fetch_or_build_tower(entry, wraps)
+        cache_key = [entry.matrix_name, entry.key, wraps.map { |w| w.extension.object_id }]
+        TOWER_CACHE[cache_key] ||= build_tower(entry, wraps)
+      end
+
+      # Builds a tower module from wraps for a specific entry.
+      #
+      # @param entry [Entry] The entry to build tower for
+      # @param wraps [Array<Wrap>] The wraps for this entry
+      # @return [Module] The tower module
+      def build_tower(entry, wraps) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+        tower = Module.new do
+          wraps.reverse_each do |wrap|
+            ext = wrap.extension
+            resolved = Phase::Resolver.resolve(ext, entry)
+            if resolved
+              include resolved
+            elsif ext.const_defined?(:InstanceMethods, false)
+              include ext::InstanceMethods
+            else
+              include ext
+            end
+          end
+        end
+        Utils.label_module(tower, "Stroma::Tower(#{entry.matrix_name}:#{entry.key})")
+        tower
       end
     end
   end
