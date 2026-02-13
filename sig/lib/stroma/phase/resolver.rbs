@@ -1,0 +1,7 @@
+module Stroma
+  module Phase
+    class Resolver
+      def self.resolve: (Module extension, Entry entry) -> Module?
+    end
+  end
+end
