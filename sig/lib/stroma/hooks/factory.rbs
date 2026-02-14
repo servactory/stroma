@@ -6,9 +6,7 @@ module Stroma
 
       def initialize: (Collection hooks, Matrix matrix) -> void
 
-      def before: (Symbol key, *Module extensions) -> void
-
-      def after: (Symbol key, *Module extensions) -> void
+      def wrap: (Symbol key, *Module extensions) -> void
 
       private
 

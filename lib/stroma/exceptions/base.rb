@@ -36,7 +36,7 @@ module Stroma
     # - RegistryNotFinalized - Raised when accessing registry before finalization
     # - KeyAlreadyRegistered - Raised when registering a duplicate key
     # - UnknownHookTarget - Raised when using an invalid hook target key
-    # - InvalidHookType - Raised when using an invalid hook type (:before/:after)
+    # - InvalidMatrixName - Raised when matrix name does not match the valid pattern
     class Base < StandardError
     end
   end

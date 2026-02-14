@@ -3,28 +3,26 @@ module Stroma
     class Collection
       extend Forwardable
 
-      @collection: Set[Hook]
+      @collection: Set[Wrap]
 
-      def initialize: (?Set[Hook] collection) -> void
+      def initialize: (?Set[Wrap] collection) -> void
 
       def initialize_dup: (Collection original) -> void
 
-      def add: (Symbol type, Symbol target_key, Module extension) -> Set[Hook]
+      def add: (Symbol target_key, Module extension) -> Set[Wrap]
 
-      def before: (Symbol key) -> Array[Hook]
+      def for: (Symbol key) -> Array[Wrap]
 
-      def after: (Symbol key) -> Array[Hook]
+      def each: () { (Wrap) -> void } -> Set[Wrap]
 
-      def each: () { (Hook) -> void } -> Set[Hook]
-
-      def map: [T] () { (Hook) -> T } -> Array[T]
+      def map: [T] () { (Wrap) -> T } -> Array[T]
 
       def empty?: () -> bool
 
       def size: () -> Integer
 
       # Protected in Ruby; declared here for Steep visibility in initialize_dup
-      attr_reader collection: Set[Hook]
+      attr_reader collection: Set[Wrap]
     end
   end
 end

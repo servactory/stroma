@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Stroma::Exceptions::InvalidHookType do
+RSpec.describe Stroma::Exceptions::InvalidMatrixName do
   it "inherits from Base" do
     expect(described_class.superclass).to eq(Stroma::Exceptions::Base)
   end

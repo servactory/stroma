@@ -1,0 +1,9 @@
+module Stroma
+  module Utils
+    def self.name_module: (Module mod, String name) -> void
+
+    private
+
+    def name_module: (Module mod, String name) -> void
+  end
+end
