@@ -41,7 +41,7 @@ module Stroma
           wraps.each do |wrap|
             blk = wrap.block
             define_method(phase_method) do |**kwargs|
-              phase = method(phase_method).super_method
+              phase = ->(**kw) { super(**kw) }
               instance_exec(phase, **kwargs, &blk)
             end
           end

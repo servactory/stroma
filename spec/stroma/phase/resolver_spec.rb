@@ -67,6 +67,55 @@ RSpec.describe Stroma::Phase::Resolver do
       end
     end
 
+    context "when multiple resolved modules are combined in a tower" do
+      let(:call_log) { [] }
+
+      let(:first_extension) do
+        log = call_log
+        Module.new do
+          extend Stroma::Phase::Wrappable
+
+          wrap_phase(:actions) do |phase, **kwargs|
+            log << :first_before
+            phase.call(**kwargs)
+            log << :first_after
+          end
+        end
+      end
+
+      let(:second_extension) do
+        log = call_log
+        Module.new do
+          extend Stroma::Phase::Wrappable
+
+          wrap_phase(:actions) do |phase, **kwargs|
+            log << :second_before
+            phase.call(**kwargs)
+            log << :second_after
+          end
+        end
+      end
+
+      let(:tower) do
+        first_resolved = described_class.resolve(first_extension, entry)
+        second_resolved = described_class.resolve(second_extension, entry)
+        Module.new do
+          include second_resolved
+          include first_resolved
+        end
+      end
+
+      it "chains correctly without infinite recursion" do
+        target_class = Class.new do
+          define_method(:_test_phase_actions!) { |**| } # rubocop:disable Lint/EmptyBlock
+        end
+        target_class.prepend(tower)
+
+        target_class.new.send(:_test_phase_actions!)
+        expect(call_log).to eq(%i[first_before second_before second_after first_after])
+      end
+    end
+
     context "when multiple wraps target the same key (last-wins)" do
       let(:call_log) { [] }
 
