@@ -71,9 +71,7 @@ module Stroma
           @stroma_matrix = matrix
 
           entries.each do |entry|
-            pm = entry.phase_method
-            define_method(pm) { |**| } # rubocop:disable Lint/EmptyBlock
-            private pm # rubocop:disable Style/AccessModifierDeclarations
+            private define_method(entry.phase_method) { |**| nil }
           end
 
           define_method(orchestrator_method) do |**args|
