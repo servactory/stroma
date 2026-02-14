@@ -13,6 +13,10 @@ RSpec.describe Stroma::DSL::Generator do
     end
   end
 
+  def find_tower(target)
+    target.ancestors.find { |a| a.inspect.include?("Stroma::Tower") }
+  end
+
   describe ".call" do
     let(:dsl_module) { described_class.call(matrix) }
 
@@ -101,8 +105,8 @@ RSpec.describe Stroma::DSL::Generator do
         register :outputs, outputs_mod
       end
 
-      klass = Class.new { include mtx.dsl }
-      klass.new.send(:_test_phases_perform!)
+      service_class = Class.new { include mtx.dsl }
+      service_class.new.send(:_test_phases_perform!)
 
       expect(call_order).to eq(%i[inputs outputs])
     end
@@ -125,10 +129,61 @@ RSpec.describe Stroma::DSL::Generator do
         register :inputs, inputs_mod
       end
 
-      klass = Class.new { include mtx.dsl }
-      klass.new.send(:_test_phases_perform!, foo: :bar)
+      service_class = Class.new { include mtx.dsl }
+      service_class.new.send(:_test_phases_perform!, foo: :bar)
 
       expect(received_kwargs).to eq(foo: :bar)
+    end
+
+    context "with wrap extensions" do
+      let(:call_order) { [] }
+
+      let(:wrap_extension) do
+        co = call_order
+        Module.new do
+          extend Stroma::Phase::Wrappable
+
+          wrap_phase(:inputs) do |phase, **kwargs|
+            co << :wrap_before
+            phase.call(**kwargs)
+            co << :wrap_after
+          end
+        end
+      end
+
+      let(:matrix) do
+        co = call_order
+        inputs_mod = Module.new do
+          define_method(:_test_phase_inputs!) { |**| co << :inputs_phase }
+        end
+        outputs_mod = Module.new do
+          define_method(:_test_phase_outputs!) { |**| co << :outputs_phase }
+        end
+
+        Stroma::Matrix.define(:test) do
+          register :inputs, inputs_mod
+          register :outputs, outputs_mod
+        end
+      end
+
+      let(:base_class) do
+        mtx = matrix
+        ext = wrap_extension
+        Class.new do
+          include mtx.dsl
+
+          extensions do
+            wrap :inputs, ext
+          end
+        end
+      end
+
+      it "orchestrator calls wrapped phases in correct order" do
+        service_class = Class.new(base_class)
+        service_class.new.send(:_test_phases_perform!)
+
+        expect(call_order).to eq(%i[wrap_before inputs_phase wrap_after outputs_phase])
+      end
     end
   end
 
@@ -158,8 +213,7 @@ RSpec.describe Stroma::DSL::Generator do
     let(:child_class) { Class.new(base_class) }
 
     it "applies wraps to child class" do
-      tower = child_class.ancestors.find { |a| a.inspect.include?("Stroma::Tower") }
-      expect(tower).not_to be_nil
+      expect(find_tower(child_class)).not_to be_nil
     end
 
     it "child has extension ClassMethods", :aggregate_failures do
@@ -209,9 +263,7 @@ RSpec.describe Stroma::DSL::Generator do
 
     it "child inherits parent hooks", :aggregate_failures do
       expect(child_class.stroma.hooks.for(:inputs).size).to eq(1)
-
-      tower = child_class.ancestors.find { |a| a.inspect.include?("Stroma::Tower") }
-      expect(tower).not_to be_nil
+      expect(find_tower(child_class)).not_to be_nil
     end
 
     it "parent modifications after child creation do not affect child" do
