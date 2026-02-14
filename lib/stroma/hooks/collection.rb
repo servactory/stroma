@@ -67,6 +67,9 @@ module Stroma
       # @param extension [Module] Extension module to include
       # @return [Set] The updated collection
       #
+      # Idempotent: duplicate wraps (same target_key + extension) are
+      # silently ignored due to Set-based storage with Data.define equality.
+      #
       # @example
       #   hooks.add(:actions, ValidationModule)
       def add(target_key, extension)

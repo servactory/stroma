@@ -70,6 +70,7 @@ module Stroma
       return if @finalized
 
       @entries.freeze
+      @keys = @entries.map(&:key).freeze
       @finalized = true
     end
 
@@ -88,7 +89,7 @@ module Stroma
     # @return [Array<Symbol>] The registry keys
     def keys
       ensure_finalized!
-      @entries.map(&:key)
+      @keys
     end
 
     # Checks if a key is registered.
@@ -98,7 +99,7 @@ module Stroma
     # @return [Boolean] true if the key is registered
     def key?(key)
       ensure_finalized!
-      @entries.any? { |e| e.key == key.to_sym }
+      @keys.include?(key.to_sym)
     end
 
     private

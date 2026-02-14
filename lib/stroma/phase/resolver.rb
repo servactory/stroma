@@ -36,6 +36,8 @@ module Stroma
         phase_method = entry.phase_method
 
         mod = Module.new do
+          # When multiple wraps target the same key within one extension,
+          # each define_method overwrites the previous — last-wins semantics.
           wraps.each do |wrap|
             blk = wrap.block
             define_method(phase_method) do |**kwargs|

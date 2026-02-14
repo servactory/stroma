@@ -47,6 +47,10 @@ module Stroma
 
         # Fetches a cached tower or builds a new one via the given block.
         #
+        # Thread-safety note: tower building occurs during class body evaluation
+        # (inherited hook), which is single-threaded in standard Ruby boot.
+        # No synchronization is needed for boot-time-only usage.
+        #
         # @param cache_key [Array] The cache key
         # @yield Block that builds the tower when not cached
         # @return [Module] The tower module

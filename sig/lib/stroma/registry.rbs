@@ -2,6 +2,7 @@ module Stroma
   class Registry
     @matrix_name: Symbol
     @entries: Array[Entry]
+    @keys: Array[Symbol]
     @finalized: bool
 
     attr_reader matrix_name: Symbol
