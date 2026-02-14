@@ -1,13 +1,17 @@
 module Stroma
   module Hooks
     class Applier
+      self.@tower_cache: Hash[Array[untyped], Module]
+
       @target_class: Class
       @hooks: Collection
       @matrix: Matrix
 
       def self.apply!: (Class target_class, Collection hooks, Matrix matrix) -> void
 
-      # Class-level tower cache (private class method)
+      def self.fetch_or_build_tower: (Array[untyped] cache_key) ?{ () -> Module } -> Module
+
+      # Private class method; declared here for Steep visibility
       def self.tower_cache: () -> Hash[Array[untyped], Module]
 
       def initialize: (Class target_class, Collection hooks, Matrix matrix) -> void
@@ -16,7 +20,7 @@ module Stroma
 
       private
 
-      def fetch_or_build_tower: (Entry entry, Array[Wrap] wraps) -> Module
+      def resolve_tower: (Entry entry, Array[Wrap] wraps) -> Module
 
       def build_tower: (Entry entry, Array[Wrap] wraps) -> Module
     end
