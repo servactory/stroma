@@ -70,14 +70,15 @@ module Stroma
         mod = Module.new do
           @stroma_matrix = matrix
 
+          private
+
           entries.each do |entry|
-            private define_method(entry.phase_method) { |**| nil }
+            define_method(entry.phase_method) { |**| nil }
           end
 
           define_method(orchestrator_method) do |**args|
             phase_methods.each { |pm| send(pm, **args) }
           end
-          private orchestrator_method # rubocop:disable Style/AccessModifierDeclarations
 
           class << self
             attr_reader :stroma_matrix
