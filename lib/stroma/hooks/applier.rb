@@ -121,7 +121,7 @@ module Stroma
             end
           end
         end
-        Utils.label_module(tower, "Stroma::Tower(#{entry.matrix_name}:#{entry.key})")
+        Utils.name_module(tower, "Stroma::Tower(#{entry.matrix_name}:#{entry.key})")
         tower
       end
     end

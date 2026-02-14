@@ -45,7 +45,7 @@ module Stroma
           end
         end
 
-        Utils.label_module(mod, "Stroma::Phase::Resolved(#{entry.matrix_name}:#{entry.key})")
+        Utils.name_module(mod, "Stroma::Phase::Resolved(#{entry.matrix_name}:#{entry.key})")
         mod
       end
     end

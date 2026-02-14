@@ -96,8 +96,8 @@ module Stroma
           const_set(:ClassMethods, class_methods)
         end
 
-        Utils.label_module(mod, "Stroma::DSL(#{matrix.name})")
-        Utils.label_module(class_methods, "Stroma::DSL(#{matrix.name})::ClassMethods")
+        Utils.name_module(mod, "Stroma::DSL(#{matrix.name})")
+        Utils.name_module(class_methods, "Stroma::DSL(#{matrix.name})::ClassMethods")
 
         mod
       end
