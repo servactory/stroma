@@ -45,6 +45,15 @@ module Stroma
           new(target_class, hooks, matrix).apply!
         end
 
+        # Fetches a cached tower or builds a new one via the given block.
+        #
+        # @param cache_key [Array] The cache key
+        # @yield Block that builds the tower when not cached
+        # @return [Module] The tower module
+        def fetch_or_build_tower(cache_key)
+          tower_cache[cache_key] ||= yield
+        end
+
         private
 
         # Returns the tower cache, lazily initialized.
@@ -85,7 +94,7 @@ module Stroma
             @target_class.extend(ext::ClassMethods) if ext.const_defined?(:ClassMethods, false)
           end
 
-          tower = fetch_or_build_tower(entry, wraps_for_entry)
+          tower = resolve_tower(entry, wraps_for_entry)
           @target_class.prepend(tower)
         end
       end
@@ -97,9 +106,9 @@ module Stroma
       # @param entry [Entry] The entry to build tower for
       # @param wraps [Array<Wrap>] The wraps for this entry
       # @return [Module] The tower module
-      def fetch_or_build_tower(entry, wraps)
+      def resolve_tower(entry, wraps)
         cache_key = [entry.matrix_name, entry.key, wraps.map { |w| w.extension.object_id }]
-        self.class.send(:tower_cache)[cache_key] ||= build_tower(entry, wraps)
+        self.class.fetch_or_build_tower(cache_key) { build_tower(entry, wraps) }
       end
 
       # Builds a tower module from wraps for a specific entry.
