@@ -106,6 +106,10 @@ module Stroma
 
       # Builds the ClassMethods module.
       #
+      # NOTE: `inherited` fires before the child class body is evaluated.
+      #       Wraps declared via `extensions {}` on a class only take effect
+      #       for its subclasses (where `inherited` re-applies the hooks).
+      #
       # @return [Module] The ClassMethods module
       def build_class_methods # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
         Module.new do

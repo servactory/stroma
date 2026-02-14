@@ -20,7 +20,7 @@ module Stroma
     #
     # ## Caching
     #
-    # Towers are cached by [matrix_name, entry_key, extension_object_ids]
+    # Towers are cached by [matrix_name, entry_key, extensions]
     # since they are built at boot time and reused across subclasses.
     #
     # ## Usage
@@ -58,11 +58,18 @@ module Stroma
           tower_cache[cache_key] ||= yield
         end
 
+        # Clears the tower cache. Intended for test cleanup.
+        #
+        # @return [void]
+        def reset_tower_cache!
+          @tower_cache = {}
+        end
+
         private
 
         # Returns the tower cache, lazily initialized.
         #
-        # @return [Hash] The cache mapping [matrix_name, key, object_ids] to tower modules
+        # @return [Hash] The cache mapping [matrix_name, key, extensions] to tower modules
         def tower_cache
           @tower_cache ||= {}
         end
@@ -111,7 +118,7 @@ module Stroma
       # @param wraps [Array<Wrap>] The wraps for this entry
       # @return [Module] The tower module
       def resolve_tower(entry, wraps)
-        cache_key = [entry.matrix_name, entry.key, wraps.map { |w| w.extension.object_id }]
+        cache_key = [entry.matrix_name, entry.key, wraps.map(&:extension)]
         self.class.fetch_or_build_tower(cache_key) { build_tower(entry, wraps) }
       end
 

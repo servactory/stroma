@@ -66,5 +66,38 @@ RSpec.describe Stroma::Phase::Resolver do
         expect(call_log).to eq(%i[before after])
       end
     end
+
+    context "when multiple wraps target the same key (last-wins)" do
+      let(:call_log) { [] }
+
+      let(:extension) do
+        log = call_log
+        Module.new do
+          extend Stroma::Phase::Wrappable
+
+          wrap_phase(:actions) do |phase, **kwargs|
+            log << :first
+            phase.call(**kwargs)
+          end
+
+          wrap_phase(:actions) do |phase, **kwargs|
+            log << :second
+            phase.call(**kwargs)
+          end
+        end
+      end
+
+      it "only executes the last wrap block" do
+        resolved = described_class.resolve(extension, entry)
+
+        target_class = Class.new do
+          define_method(:_test_phase_actions!) { |**| } # rubocop:disable Lint/EmptyBlock
+        end
+        target_class.prepend(resolved)
+
+        target_class.new.send(:_test_phase_actions!)
+        expect(call_log).to eq(%i[second])
+      end
+    end
   end
 end

@@ -27,7 +27,7 @@ module Stroma
 
       def to_h: () -> Hash[Symbol, untyped]
 
-      # Note: Ruby implementation uses splat args: fetch(key, *args, &block)
+      # NOTE: Ruby implementation uses splat args: fetch(key, *args, &block)
       def fetch: (Symbol key) -> untyped
                | (Symbol key, untyped default) -> untyped
                | (Symbol key) { (Symbol) -> untyped } -> untyped

@@ -11,6 +11,8 @@ module Stroma
 
       def self.fetch_or_build_tower: (Array[untyped] cache_key) ?{ () -> Module } -> Module
 
+      def self.reset_tower_cache!: () -> void
+
       # Private class method; declared here for Steep visibility
       def self.tower_cache: () -> Hash[Array[untyped], Module]
 

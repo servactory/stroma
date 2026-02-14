@@ -1,7 +1,7 @@
 module Stroma
   module Hooks
-    # Note: Wrap uses Data.define but RBS should NOT inherit from Data
-    # per RBS documentation for proper type checking
+    # NOTE: Wrap uses Data.define but RBS should NOT inherit from Data
+    #       per RBS documentation for proper type checking
     class Wrap
       attr_reader target_key: Symbol
       attr_reader extension: Module
