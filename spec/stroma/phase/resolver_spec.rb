@@ -87,9 +87,9 @@ RSpec.describe Stroma::Phase::Resolver do
         end
       end
 
-      it "only executes the last wrap block" do
-        resolved = described_class.resolve(extension, entry)
+      let(:resolved) { described_class.resolve(extension, entry) }
 
+      it "only executes the last wrap block" do
         target_class = Class.new do
           define_method(:_test_phase_actions!) { |**| } # rubocop:disable Lint/EmptyBlock
         end
