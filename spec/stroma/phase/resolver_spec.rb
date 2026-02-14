@@ -28,34 +28,42 @@ RSpec.describe Stroma::Phase::Resolver do
 
     context "when extension has wraps for the entry" do
       let(:call_log) { [] }
-      let(:log) { call_log }
 
       let(:extension) do
-        l = log
+        log = call_log
         Module.new do
           extend Stroma::Phase::Wrappable
 
           wrap_phase(:actions) do |phase, **kwargs|
-            l << :before
+            log << :before
             phase.call(**kwargs)
-            l << :after
+            log << :after
           end
         end
       end
 
+      let(:resolved) { described_class.resolve(extension, entry) }
+
       it "returns a module" do
-        result = described_class.resolve(extension, entry)
-        expect(result).to be_a(Module)
+        expect(resolved).to be_a(Module)
       end
 
       it "labels the module" do
-        result = described_class.resolve(extension, entry)
-        expect(result.inspect).to include("Stroma::Phase::Resolved(test:actions)")
+        expect(resolved.inspect).to include("Stroma::Phase::Resolved(test:actions)")
       end
 
       it "defines the phase method" do
-        result = described_class.resolve(extension, entry)
-        expect(result.instance_methods(false)).to include(:_test_phase_actions!)
+        expect(resolved.instance_methods(false)).to include(:_test_phase_actions!)
+      end
+
+      it "executes the wrap block around the phase" do
+        target_class = Class.new do
+          define_method(:_test_phase_actions!) { |**| } # rubocop:disable Lint/EmptyBlock
+        end
+        target_class.prepend(resolved)
+
+        target_class.new.send(:_test_phase_actions!)
+        expect(call_log).to eq(%i[before after])
       end
     end
   end
