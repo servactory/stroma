@@ -65,6 +65,7 @@ module Stroma
         class_methods = build_class_methods
         orchestrator_method = :"_#{matrix.name}_phases_perform!"
         entries = matrix.entries
+        phase_methods = entries.map(&:phase_method).freeze
 
         mod = Module.new do
           @stroma_matrix = matrix
@@ -76,7 +77,7 @@ module Stroma
           end
 
           define_method(orchestrator_method) do |**args|
-            entries.each { |entry| send(entry.phase_method, **args) }
+            phase_methods.each { |pm| send(pm, **args) }
           end
           private orchestrator_method # rubocop:disable Style/AccessModifierDeclarations
 
