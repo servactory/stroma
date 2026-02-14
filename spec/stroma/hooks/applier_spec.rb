@@ -16,6 +16,10 @@ RSpec.describe Stroma::Hooks::Applier do
   let(:target_class) { Class.new }
   let(:applier) { described_class.new(target_class, hooks, matrix) }
 
+  def find_tower(target)
+    target.ancestors.find { |a| a.inspect.include?("Stroma::Tower") }
+  end
+
   describe ".apply!" do
     let(:wrap_extension) { Module.new }
 
@@ -147,8 +151,7 @@ RSpec.describe Stroma::Hooks::Applier do
 
       it "labels tower modules" do
         applier.apply!
-        tower = target_class.ancestors.find { |a| a.inspect.include?("Stroma::Tower") }
-        expect(tower.inspect).to eq("Stroma::Tower(test:inputs)")
+        expect(find_tower(target_class).inspect).to eq("Stroma::Tower(test:inputs)")
       end
     end
 
@@ -166,10 +169,20 @@ RSpec.describe Stroma::Hooks::Applier do
         described_class.apply!(first_class, hooks, matrix)
         described_class.apply!(second_class, hooks, matrix)
 
-        first_tower = first_class.ancestors.find { |a| a.inspect.include?("Stroma::Tower") }
-        second_tower = second_class.ancestors.find { |a| a.inspect.include?("Stroma::Tower") }
+        expect(find_tower(first_class)).to equal(find_tower(second_class))
+      end
 
-        expect(first_tower).to equal(second_tower)
+      it "builds different towers for different wraps" do
+        other_hooks = Stroma::Hooks::Collection.new
+        other_hooks.add(:inputs, Module.new)
+
+        first_class = Class.new
+        second_class = Class.new
+
+        described_class.apply!(first_class, hooks, matrix)
+        described_class.apply!(second_class, other_hooks, matrix)
+
+        expect(find_tower(first_class)).not_to equal(find_tower(second_class))
       end
     end
   end
