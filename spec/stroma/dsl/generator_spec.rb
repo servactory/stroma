@@ -56,7 +56,7 @@ RSpec.describe Stroma::DSL::Generator do
       expect(base_class).to respond_to(:inherited)
     end
 
-    it "does not include entry modules in base ancestors (deferred)", :aggregate_failures do
+    it "does not include entry modules in base ancestors", :aggregate_failures do
       expect(base_class.ancestors).not_to include(inputs_dsl)
       expect(base_class.ancestors).not_to include(outputs_dsl)
     end
@@ -93,23 +93,23 @@ RSpec.describe Stroma::DSL::Generator do
 
     let(:child_class) { Class.new(base_class) }
 
-    it "applies hooks to child class" do
-      expect(child_class.ancestors).to include(extension_module)
-    end
-
-    it "child has extension method", :aggregate_failures do
-      expect(child_class).to respond_to(:extension_method)
-      expect(child_class.extension_method).to eq(:extension_result)
-    end
-
     it "includes entry modules in child via interleaving", :aggregate_failures do
       expect(child_class.ancestors).to include(inputs_dsl)
       expect(child_class.ancestors).to include(outputs_dsl)
     end
 
+    it "applies hooks to child class" do
+      expect(child_class.ancestors).to include(extension_module)
+    end
+
     it "positions hook adjacent to its target entry in child" do
       ancestors = child_class.ancestors
       expect(ancestors.index(extension_module)).to be < ancestors.index(inputs_dsl)
+    end
+
+    it "child has extension method", :aggregate_failures do
+      expect(child_class).to respond_to(:extension_method)
+      expect(child_class.extension_method).to eq(:extension_result)
     end
 
     it "copies stroma state to child", :aggregate_failures do
@@ -173,7 +173,7 @@ RSpec.describe Stroma::DSL::Generator do
   describe "inheritance isolation" do
     let(:extension_module) { Module.new }
 
-    let(:parent_class) do
+    let(:base_class) do
       mtx = matrix
       ext = extension_module
       Class.new do
@@ -185,9 +185,9 @@ RSpec.describe Stroma::DSL::Generator do
       end
     end
 
-    let(:child_class) { Class.new(parent_class) }
+    let(:child_class) { Class.new(base_class) }
 
-    it "child modifications do not affect parent", :aggregate_failures do
+    it "child modifications do not affect base", :aggregate_failures do
       child_extension = Module.new
 
       child_class.class_eval do
@@ -196,20 +196,20 @@ RSpec.describe Stroma::DSL::Generator do
         end
       end
 
-      expect(parent_class.stroma.hooks.after(:outputs)).to be_empty
+      expect(base_class.stroma.hooks.after(:outputs)).to be_empty
       expect(child_class.stroma.hooks.after(:outputs)).not_to be_empty
     end
 
-    it "child inherits parent hooks", :aggregate_failures do
+    it "child inherits base hooks", :aggregate_failures do
       expect(child_class.stroma.hooks.before(:inputs).size).to eq(1)
       expect(child_class.ancestors).to include(extension_module)
     end
 
-    it "parent modifications after child creation do not affect child" do
+    it "base modifications after child creation do not affect child" do
       child_before_count = child_class.stroma.hooks.before(:outputs).size
       new_extension = Module.new
 
-      parent_class.class_eval do
+      base_class.class_eval do
         extensions do
           before :outputs, new_extension
         end

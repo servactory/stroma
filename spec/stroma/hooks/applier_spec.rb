@@ -30,7 +30,7 @@ RSpec.describe Stroma::Hooks::Applier do
   end
 
   describe "#apply!" do
-    context "when hooks are empty (defer)" do
+    context "when hooks are empty" do
       it "does not modify target class ancestors" do
         ancestors_before = target_class.ancestors.dup
         applier.apply!
@@ -44,7 +44,7 @@ RSpec.describe Stroma::Hooks::Applier do
       end
     end
 
-    context "when entries are NOT in ancestors (interleave)" do
+    context "when entries are not in ancestors" do
       context "with a before hook" do
         let(:before_ext) { Module.new }
 
@@ -155,7 +155,7 @@ RSpec.describe Stroma::Hooks::Applier do
       end
     end
 
-    context "when entries are already in ancestors (hooks only)" do
+    context "when entries are already in ancestors" do
       let(:before_ext) { Module.new }
 
       before do
@@ -176,17 +176,6 @@ RSpec.describe Stroma::Hooks::Applier do
 
         expect(count_after).to eq(count_before)
       end
-    end
-  end
-
-  describe "entries_in_ancestors? (private)" do
-    it "returns false when entries not in ancestors" do
-      expect(applier.send(:entries_in_ancestors?)).to be false
-    end
-
-    it "returns true when an entry is in ancestors" do
-      target_class.include(inputs_dsl)
-      expect(applier.send(:entries_in_ancestors?)).to be true
     end
   end
 end
