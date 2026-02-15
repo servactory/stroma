@@ -30,54 +30,163 @@ RSpec.describe Stroma::Hooks::Applier do
   end
 
   describe "#apply!" do
-    it "does nothing when hooks empty" do
-      applier.apply!
-      expect(target_class.ancestors).not_to include(inputs_dsl)
-    end
-
-    context "with before hooks" do
-      let(:before_extension) { Module.new }
-
-      before do
-        hooks.add(:before, :inputs, before_extension)
+    context "when hooks are empty (defer)" do
+      it "does not modify target class ancestors" do
+        ancestors_before = target_class.ancestors.dup
+        applier.apply!
+        expect(target_class.ancestors).to eq(ancestors_before)
       end
 
-      it "includes before hook extension" do
+      it "does not include entry extensions", :aggregate_failures do
         applier.apply!
-        expect(target_class.ancestors).to include(before_extension)
+        expect(target_class.ancestors).not_to include(inputs_dsl)
+        expect(target_class.ancestors).not_to include(outputs_dsl)
       end
     end
 
-    context "with after hooks" do
-      let(:after_extension) { Module.new }
+    context "when entries are NOT in ancestors (interleave)" do
+      context "with a before hook" do
+        let(:before_ext) { Module.new }
 
-      before do
-        hooks.add(:after, :outputs, after_extension)
+        before { hooks.add(:before, :inputs, before_ext) }
+
+        it "positions before hook above entry in MRO" do
+          applier.apply!
+          ancestors = target_class.ancestors
+
+          expect(ancestors.index(before_ext)).to be < ancestors.index(inputs_dsl)
+        end
+
+        it "includes all entries" do
+          applier.apply!
+          ancestors = target_class.ancestors
+
+          expect(ancestors).to include(inputs_dsl, outputs_dsl)
+        end
       end
 
-      it "includes after hook extension" do
-        applier.apply!
-        expect(target_class.ancestors).to include(after_extension)
+      context "with an after hook" do
+        let(:after_ext) { Module.new }
+
+        before { hooks.add(:after, :inputs, after_ext) }
+
+        it "positions after hook below entry in MRO" do
+          applier.apply!
+          ancestors = target_class.ancestors
+
+          expect(ancestors.index(after_ext)).to be > ancestors.index(inputs_dsl)
+        end
+      end
+
+      context "with both before and after hooks" do
+        let(:before_ext) { Module.new }
+        let(:after_ext) { Module.new }
+
+        before do
+          hooks.add(:before, :inputs, before_ext)
+          hooks.add(:after, :inputs, after_ext)
+        end
+
+        it "positions before above and after below entry", :aggregate_failures do
+          applier.apply!
+          ancestors = target_class.ancestors
+
+          before_idx = ancestors.index(before_ext)
+          entry_idx = ancestors.index(inputs_dsl)
+          after_idx = ancestors.index(after_ext)
+
+          expect(before_idx).to be < entry_idx
+          expect(after_idx).to be > entry_idx
+        end
+      end
+
+      context "with multiple before hooks" do
+        let(:first_before) { Module.new }
+        let(:second_before) { Module.new }
+
+        before do
+          hooks.add(:before, :inputs, first_before)
+          hooks.add(:before, :inputs, second_before)
+        end
+
+        it "first registered is outermost in MRO", :aggregate_failures do
+          applier.apply!
+          ancestors = target_class.ancestors
+
+          expect(ancestors.index(first_before)).to be < ancestors.index(second_before)
+          expect(ancestors.index(second_before)).to be < ancestors.index(inputs_dsl)
+        end
+      end
+
+      context "with multiple after hooks" do
+        let(:first_after) { Module.new }
+        let(:second_after) { Module.new }
+
+        before do
+          hooks.add(:after, :inputs, first_after)
+          hooks.add(:after, :inputs, second_after)
+        end
+
+        it "first registered is closest to entry", :aggregate_failures do
+          applier.apply!
+          ancestors = target_class.ancestors
+
+          expect(ancestors.index(inputs_dsl)).to be < ancestors.index(first_after)
+          expect(ancestors.index(first_after)).to be < ancestors.index(second_after)
+        end
+      end
+
+      context "with hooks for different entries" do
+        let(:before_inputs_ext) { Module.new }
+        let(:after_outputs_ext) { Module.new }
+
+        before do
+          hooks.add(:before, :inputs, before_inputs_ext)
+          hooks.add(:after, :outputs, after_outputs_ext)
+        end
+
+        it "each hook is adjacent to its target entry", :aggregate_failures do
+          applier.apply!
+          ancestors = target_class.ancestors
+
+          expect(ancestors.index(before_inputs_ext)).to be < ancestors.index(inputs_dsl)
+          expect(ancestors.index(after_outputs_ext)).to be > ancestors.index(outputs_dsl)
+        end
       end
     end
 
-    context "with multiple hooks" do # rubocop:disable RSpec/MultipleMemoizedHelpers
-      let(:before_inputs) { Module.new }
-      let(:after_inputs) { Module.new }
-      let(:before_outputs) { Module.new }
+    context "when entries are already in ancestors (hooks only)" do
+      let(:before_ext) { Module.new }
 
       before do
-        hooks.add(:before, :inputs, before_inputs)
-        hooks.add(:after, :inputs, after_inputs)
-        hooks.add(:before, :outputs, before_outputs)
+        target_class.include(outputs_dsl)
+        target_class.include(inputs_dsl)
+        hooks.add(:before, :inputs, before_ext)
       end
 
-      it "applies all hooks", :aggregate_failures do
+      it "includes hook extensions" do
         applier.apply!
-        expect(target_class.ancestors).to include(before_inputs)
-        expect(target_class.ancestors).to include(after_inputs)
-        expect(target_class.ancestors).to include(before_outputs)
+        expect(target_class.ancestors).to include(before_ext)
       end
+
+      it "does not duplicate entries in ancestors" do
+        count_before = target_class.ancestors.count { |a| a == inputs_dsl }
+        applier.apply!
+        count_after = target_class.ancestors.count { |a| a == inputs_dsl }
+
+        expect(count_after).to eq(count_before)
+      end
+    end
+  end
+
+  describe "entries_in_ancestors? (private)" do
+    it "returns false when entries not in ancestors" do
+      expect(applier.send(:entries_in_ancestors?)).to be false
+    end
+
+    it "returns true when an entry is in ancestors" do
+      target_class.include(inputs_dsl)
+      expect(applier.send(:entries_in_ancestors?)).to be true
     end
   end
 end

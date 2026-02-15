@@ -56,9 +56,9 @@ RSpec.describe Stroma::DSL::Generator do
       expect(base_class).to respond_to(:inherited)
     end
 
-    it "includes all registered DSL modules", :aggregate_failures do
-      expect(base_class.ancestors).to include(inputs_dsl)
-      expect(base_class.ancestors).to include(outputs_dsl)
+    it "does not include entry modules in base ancestors (deferred)", :aggregate_failures do
+      expect(base_class.ancestors).not_to include(inputs_dsl)
+      expect(base_class.ancestors).not_to include(outputs_dsl)
     end
 
     it "creates stroma state" do
@@ -102,6 +102,16 @@ RSpec.describe Stroma::DSL::Generator do
       expect(child_class.extension_method).to eq(:extension_result)
     end
 
+    it "includes entry modules in child via interleaving", :aggregate_failures do
+      expect(child_class.ancestors).to include(inputs_dsl)
+      expect(child_class.ancestors).to include(outputs_dsl)
+    end
+
+    it "positions hook adjacent to its target entry in child" do
+      ancestors = child_class.ancestors
+      expect(ancestors.index(extension_module)).to be < ancestors.index(inputs_dsl)
+    end
+
     it "copies stroma state to child", :aggregate_failures do
       expect(child_class.stroma).not_to eq(base_class.stroma)
       expect(child_class.stroma).to be_a(Stroma::State)
@@ -109,6 +119,54 @@ RSpec.describe Stroma::DSL::Generator do
 
     it "preserves matrix reference" do
       expect(child_class.stroma_matrix).to eq(matrix)
+    end
+  end
+
+  describe "multi-level inheritance" do
+    let(:auth_module) do
+      Module.new do
+        def self.included(base)
+          base.define_singleton_method(:auth_configured) { true }
+        end
+      end
+    end
+
+    let(:base_class) do
+      mtx = matrix
+      Class.new { include mtx.dsl }
+    end
+
+    let(:app_base) do
+      base = base_class
+      auth = auth_module
+      Class.new(base) do
+        extensions do
+          before :inputs, auth
+        end
+      end
+    end
+
+    let(:leaf_class) { Class.new(app_base) }
+
+    it "defers entries in base (no hooks)", :aggregate_failures do
+      expect(base_class.ancestors).not_to include(inputs_dsl)
+      expect(base_class.ancestors).not_to include(outputs_dsl)
+    end
+
+    it "defers entries in app_base (hooks registered but not applied yet)", :aggregate_failures do
+      expect(app_base.ancestors).not_to include(inputs_dsl)
+      expect(app_base.ancestors).not_to include(outputs_dsl)
+    end
+
+    it "interleaves entries with hooks in leaf class", :aggregate_failures do
+      ancestors = leaf_class.ancestors
+
+      expect(ancestors).to include(inputs_dsl, outputs_dsl, auth_module)
+      expect(ancestors.index(auth_module)).to be < ancestors.index(inputs_dsl)
+    end
+
+    it "propagates hook class methods to leaf via interleaving" do
+      expect(leaf_class).to respond_to(:auth_configured)
     end
   end
 
