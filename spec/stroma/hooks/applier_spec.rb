@@ -17,15 +17,15 @@ RSpec.describe Stroma::Hooks::Applier do
   let(:applier) { described_class.new(target_class, hooks, matrix) }
 
   describe ".apply!" do
-    let(:before_extension) { Module.new }
+    let(:before_extensionension) { Module.new }
 
     before do
-      hooks.add(:before, :inputs, before_extension)
+      hooks.add(:before, :inputs, before_extensionension)
+      described_class.apply!(target_class, hooks, matrix)
     end
 
     it "applies hooks via class method" do
-      described_class.apply!(target_class, hooks, matrix)
-      expect(target_class.ancestors).to include(before_extension)
+      expect(target_class.ancestors).to include(before_extensionension)
     end
   end
 
@@ -46,57 +46,51 @@ RSpec.describe Stroma::Hooks::Applier do
 
     context "when entries are not in ancestors" do
       context "with a before hook" do
-        let(:before_ext) { Module.new }
+        let(:before_extension) { Module.new }
 
-        before { hooks.add(:before, :inputs, before_ext) }
+        before do
+          hooks.add(:before, :inputs, before_extension)
+          applier.apply!
+        end
 
         it "positions before hook above entry in MRO" do
-          applier.apply!
           ancestors = target_class.ancestors
-
-          expect(ancestors.index(before_ext)).to be < ancestors.index(inputs_dsl)
+          expect(ancestors.index(before_extension)).to be < ancestors.index(inputs_dsl)
         end
 
         it "includes all entries" do
-          applier.apply!
-          ancestors = target_class.ancestors
-
-          expect(ancestors).to include(inputs_dsl, outputs_dsl)
+          expect(target_class.ancestors).to include(inputs_dsl, outputs_dsl)
         end
       end
 
       context "with an after hook" do
-        let(:after_ext) { Module.new }
+        let(:after_extension) { Module.new }
 
-        before { hooks.add(:after, :inputs, after_ext) }
+        before do
+          hooks.add(:after, :inputs, after_extension)
+          applier.apply!
+        end
 
         it "positions after hook below entry in MRO" do
-          applier.apply!
           ancestors = target_class.ancestors
-
-          expect(ancestors.index(after_ext)).to be > ancestors.index(inputs_dsl)
+          expect(ancestors.index(after_extension)).to be > ancestors.index(inputs_dsl)
         end
       end
 
       context "with both before and after hooks" do
-        let(:before_ext) { Module.new }
-        let(:after_ext) { Module.new }
+        let(:before_extension) { Module.new }
+        let(:after_extension) { Module.new }
 
         before do
-          hooks.add(:before, :inputs, before_ext)
-          hooks.add(:after, :inputs, after_ext)
+          hooks.add(:before, :inputs, before_extension)
+          hooks.add(:after, :inputs, after_extension)
+          applier.apply!
         end
 
         it "positions before above and after below entry", :aggregate_failures do
-          applier.apply!
           ancestors = target_class.ancestors
-
-          before_idx = ancestors.index(before_ext)
-          entry_idx = ancestors.index(inputs_dsl)
-          after_idx = ancestors.index(after_ext)
-
-          expect(before_idx).to be < entry_idx
-          expect(after_idx).to be > entry_idx
+          expect(ancestors.index(before_extension)).to be < ancestors.index(inputs_dsl)
+          expect(ancestors.index(after_extension)).to be > ancestors.index(inputs_dsl)
         end
       end
 
@@ -107,12 +101,11 @@ RSpec.describe Stroma::Hooks::Applier do
         before do
           hooks.add(:before, :inputs, first_before)
           hooks.add(:before, :inputs, second_before)
+          applier.apply!
         end
 
         it "first registered is outermost in MRO", :aggregate_failures do
-          applier.apply!
           ancestors = target_class.ancestors
-
           expect(ancestors.index(first_before)).to be < ancestors.index(second_before)
           expect(ancestors.index(second_before)).to be < ancestors.index(inputs_dsl)
         end
@@ -125,32 +118,30 @@ RSpec.describe Stroma::Hooks::Applier do
         before do
           hooks.add(:after, :inputs, first_after)
           hooks.add(:after, :inputs, second_after)
+          applier.apply!
         end
 
         it "first registered is closest to entry", :aggregate_failures do
-          applier.apply!
           ancestors = target_class.ancestors
-
           expect(ancestors.index(inputs_dsl)).to be < ancestors.index(first_after)
           expect(ancestors.index(first_after)).to be < ancestors.index(second_after)
         end
       end
 
       context "with hooks for different entries" do
-        let(:before_inputs_ext) { Module.new }
-        let(:after_outputs_ext) { Module.new }
+        let(:before_inputs_extension) { Module.new }
+        let(:after_outputs_extension) { Module.new }
 
         before do
-          hooks.add(:before, :inputs, before_inputs_ext)
-          hooks.add(:after, :outputs, after_outputs_ext)
+          hooks.add(:before, :inputs, before_inputs_extension)
+          hooks.add(:after, :outputs, after_outputs_extension)
+          applier.apply!
         end
 
         it "each hook is adjacent to its target entry", :aggregate_failures do
-          applier.apply!
           ancestors = target_class.ancestors
-
-          expect(ancestors.index(before_inputs_ext)).to be < ancestors.index(inputs_dsl)
-          expect(ancestors.index(after_outputs_ext)).to be > ancestors.index(outputs_dsl)
+          expect(ancestors.index(before_inputs_extension)).to be < ancestors.index(inputs_dsl)
+          expect(ancestors.index(after_outputs_extension)).to be > ancestors.index(outputs_dsl)
         end
       end
     end
@@ -162,48 +153,48 @@ RSpec.describe Stroma::Hooks::Applier do
       end
 
       context "with a before hook" do
-        let(:before_ext) { Module.new }
+        let(:before_extension) { Module.new }
 
-        before { hooks.add(:before, :inputs, before_ext) }
+        before do
+          hooks.add(:before, :inputs, before_extension)
+          applier.apply!
+        end
 
         it "includes hook extensions" do
-          applier.apply!
-          expect(target_class.ancestors).to include(before_ext)
+          expect(target_class.ancestors).to include(before_extension)
         end
 
         it "does not duplicate entries in ancestors" do
-          count_before = target_class.ancestors.count { |a| a == inputs_dsl }
-          applier.apply!
-          count_after = target_class.ancestors.count { |a| a == inputs_dsl }
-
-          expect(count_after).to eq(count_before)
+          expect(target_class.ancestors.count { |a| a == inputs_dsl }).to eq(1)
         end
       end
 
       context "with an after hook" do
-        let(:after_ext) { Module.new }
+        let(:after_extension) { Module.new }
 
-        before { hooks.add(:after, :inputs, after_ext) }
+        before do
+          hooks.add(:after, :inputs, after_extension)
+          applier.apply!
+        end
 
         it "includes after hook extensions" do
-          applier.apply!
-          expect(target_class.ancestors).to include(after_ext)
+          expect(target_class.ancestors).to include(after_extension)
         end
       end
 
       context "with both before and after hooks" do
-        let(:before_ext) { Module.new }
-        let(:after_ext) { Module.new }
+        let(:before_extension) { Module.new }
+        let(:after_extension) { Module.new }
 
         before do
-          hooks.add(:before, :inputs, before_ext)
-          hooks.add(:after, :inputs, after_ext)
+          hooks.add(:before, :inputs, before_extension)
+          hooks.add(:after, :inputs, after_extension)
+          applier.apply!
         end
 
         it "includes both hook types", :aggregate_failures do
-          applier.apply!
-          expect(target_class.ancestors).to include(before_ext)
-          expect(target_class.ancestors).to include(after_ext)
+          expect(target_class.ancestors).to include(before_extension)
+          expect(target_class.ancestors).to include(after_extension)
         end
       end
     end

@@ -123,118 +123,109 @@ RSpec.describe Stroma::DSL::Generator do
   end
 
   describe "multi-level inheritance" do
-    let(:auth_module) do
-      Module.new do
-        def self.included(base)
-          base.define_singleton_method(:auth_configured) { true }
-        end
-      end
-    end
-
     let(:base_class) do
       mtx = matrix
       Class.new { include mtx.dsl }
     end
 
-    let(:app_base) do
-      base = base_class
-      auth = auth_module
-      Class.new(base) do
-        extensions do
-          before :inputs, auth
+    context "with hooks at one level" do
+      let(:auth_module) do
+        Module.new do
+          def self.included(base)
+            base.define_singleton_method(:auth_configured) { true }
+          end
         end
+      end
+
+      let(:mid_class) do
+        base = base_class
+        auth = auth_module
+        Class.new(base) do
+          extensions do
+            before :inputs, auth
+          end
+        end
+      end
+
+      let(:leaf_class) { Class.new(mid_class) }
+
+      it "defers entries in base (no hooks)", :aggregate_failures do
+        expect(base_class.ancestors).not_to include(inputs_dsl)
+        expect(base_class.ancestors).not_to include(outputs_dsl)
+      end
+
+      it "defers entries in mid class (hooks registered but not applied yet)", :aggregate_failures do
+        expect(mid_class.ancestors).not_to include(inputs_dsl)
+        expect(mid_class.ancestors).not_to include(outputs_dsl)
+      end
+
+      it "interleaves entries with hooks in leaf class", :aggregate_failures do
+        ancestors = leaf_class.ancestors
+
+        expect(ancestors).to include(inputs_dsl, outputs_dsl, auth_module)
+        expect(ancestors.index(auth_module)).to be < ancestors.index(inputs_dsl)
+      end
+
+      it "propagates hook class methods to leaf via interleaving" do
+        expect(leaf_class).to respond_to(:auth_configured)
       end
     end
 
-    let(:leaf_class) { Class.new(app_base) }
+    context "with hooks at every level" do
+      let(:auth_module) { Module.new }
+      let(:logging_module) { Module.new }
 
-    it "defers entries in base (no hooks)", :aggregate_failures do
-      expect(base_class.ancestors).not_to include(inputs_dsl)
-      expect(base_class.ancestors).not_to include(outputs_dsl)
-    end
-
-    it "defers entries in app_base (hooks registered but not applied yet)", :aggregate_failures do
-      expect(app_base.ancestors).not_to include(inputs_dsl)
-      expect(app_base.ancestors).not_to include(outputs_dsl)
-    end
-
-    it "interleaves entries with hooks in leaf class", :aggregate_failures do
-      ancestors = leaf_class.ancestors
-
-      expect(ancestors).to include(inputs_dsl, outputs_dsl, auth_module)
-      expect(ancestors.index(auth_module)).to be < ancestors.index(inputs_dsl)
-    end
-
-    it "propagates hook class methods to leaf via interleaving" do
-      expect(leaf_class).to respond_to(:auth_configured)
-    end
-  end
-
-  describe "multi-level with hooks at every level" do
-    let(:auth_module) { Module.new }
-    let(:logging_module) { Module.new }
-
-    let(:base_class) do
-      mtx = matrix
-      Class.new { include mtx.dsl }
-    end
-
-    let(:mid_class) do
-      base = base_class
-      auth = auth_module
-      Class.new(base) do
-        extensions do
-          before :inputs, auth
+      let(:mid_class) do
+        base = base_class
+        auth = auth_module
+        Class.new(base) do
+          extensions do
+            before :inputs, auth
+          end
         end
+      end
+
+      let(:leaf_class) do
+        mid = mid_class
+        logging = logging_module
+        Class.new(mid) do
+          extensions do
+            after :inputs, logging
+          end
+        end
+      end
+
+      it "grandchild inherits hooks from all levels", :aggregate_failures do
+        grandchild = Class.new(leaf_class)
+
+        expect(grandchild.ancestors).to include(auth_module)
+        expect(grandchild.ancestors).to include(logging_module)
+        expect(grandchild.ancestors).to include(inputs_dsl)
+        expect(grandchild.ancestors).to include(outputs_dsl)
       end
     end
 
-    let(:leaf_class) do
-      mid = mid_class
-      logging = logging_module
-      Class.new(mid) do
-        extensions do
-          after :inputs, logging
+    context "when grandchild has no own hooks" do
+      let(:auth_module) { Module.new }
+
+      let(:mid_class) do
+        base = base_class
+        auth = auth_module
+        Class.new(base) do
+          extensions do
+            before :inputs, auth
+          end
         end
       end
-    end
 
-    it "leaf inherits hooks from all levels", :aggregate_failures do
-      grandchild = Class.new(leaf_class)
-      ancestors = grandchild.ancestors
+      let(:child_class) { Class.new(mid_class) }
+      let(:grandchild) { Class.new(child_class) }
 
-      expect(ancestors).to include(auth_module)
-      expect(ancestors).to include(logging_module)
-      expect(ancestors).to include(inputs_dsl)
-      expect(ancestors).to include(outputs_dsl)
-    end
-  end
-
-  describe "grandchild without own hooks" do
-    let(:auth_module) { Module.new }
-
-    let(:base_class) do
-      mtx = matrix
-      Class.new { include mtx.dsl }
-    end
-
-    let(:mid_class) do
-      base = base_class
-      auth = auth_module
-      Class.new(base) do
-        extensions do
-          before :inputs, auth
-        end
+      it "entries propagate to grandchild via ancestors", :aggregate_failures do
+        expect(grandchild.ancestors).to include(inputs_dsl)
+        expect(grandchild.ancestors).to include(outputs_dsl)
+        expect(grandchild.ancestors).to include(auth_module)
       end
-    end
-
-    it "entries propagate to grandchild via ancestors", :aggregate_failures do
-      child = Class.new(mid_class)
-      grandchild = Class.new(child)
-
-      expect(grandchild.ancestors).to include(inputs_dsl)
-      expect(grandchild.ancestors).to include(outputs_dsl)
-      expect(grandchild.ancestors).to include(auth_module)
     end
   end
 
