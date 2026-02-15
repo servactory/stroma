@@ -2,13 +2,15 @@
 
 module Stroma
   module Hooks
-    # Applies registered hooks to a target class.
+    # Applies registered hooks to a target class with deferred entry inclusion.
     #
     # ## Purpose
     #
-    # Includes hook extension modules into target class.
-    # Maintains order based on matrix registry entries.
-    # For each entry: before hooks first, then after hooks.
+    # Manages hook and entry module inclusion into the target class.
+    # Operates in three modes depending on current state:
+    # - No hooks: returns immediately (entries stay deferred)
+    # - Entries already in ancestors: includes only new hooks
+    # - Entries not in ancestors: interleaves entries with hooks for correct MRO
     #
     # ## Usage
     #
@@ -68,11 +70,16 @@ module Stroma
 
       private
 
-      # Checks whether any entry extension is already in the target class ancestors.
+      # Checks whether all entry extensions are already in the target class ancestors.
+      #
+      # Uses all? so that partial inclusion (some entries present, some not)
+      # falls through to include_entries_with_hooks where Ruby skips
+      # already-included modules (idempotent) and interleaves the rest.
       #
       # @return [Boolean]
       def entries_in_ancestors?
-        @matrix.entries.any? { |e| @target_class.ancestors.include?(e.extension) }
+        ancestors = @target_class.ancestors
+        @matrix.entries.all? { |e| ancestors.include?(e.extension) }
       end
 
       # Includes entries interleaved with their hooks.
