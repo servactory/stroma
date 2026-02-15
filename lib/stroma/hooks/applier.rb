@@ -2,13 +2,15 @@
 
 module Stroma
   module Hooks
-    # Applies registered hooks to a target class.
+    # Applies registered hooks to a target class with deferred entry inclusion.
     #
     # ## Purpose
     #
-    # Includes hook extension modules into target class.
-    # Maintains order based on matrix registry entries.
-    # For each entry: before hooks first, then after hooks.
+    # Manages hook and entry module inclusion into the target class.
+    # Operates in three modes depending on current state:
+    # - No hooks: returns immediately (entries stay deferred)
+    # - Entries already in ancestors: includes only new hooks
+    # - Entries not in ancestors: interleaves entries with hooks for correct MRO
     #
     # ## Usage
     #
@@ -50,16 +52,59 @@ module Stroma
 
       # Applies all registered hooks to the target class.
       #
-      # For each registry entry, includes before hooks first,
-      # then after hooks. Does nothing if hooks collection is empty.
+      # Three modes based on current state:
+      # - No hooks: return immediately (defer entry inclusion)
+      # - Entries already in ancestors: include only hooks
+      # - Entries not in ancestors: interleave entries with hooks
       #
       # @return [void]
       def apply!
         return if @hooks.empty?
 
+        if entries_in_ancestors?
+          include_hooks_only
+        else
+          include_entries_with_hooks
+        end
+      end
+
+      private
+
+      # Checks whether all entry extensions are already in the target class ancestors.
+      #
+      # Uses all? so that partial inclusion (some entries present, some not)
+      # falls through to include_entries_with_hooks where Ruby skips
+      # already-included modules (idempotent) and interleaves the rest.
+      #
+      # @return [Boolean]
+      def entries_in_ancestors?
+        ancestors = @target_class.ancestors
+        @matrix.entries.all? { |e| ancestors.include?(e.extension) }
+      end
+
+      # Includes entries interleaved with their hooks.
+      #
+      # For each entry: after hooks first (reversed), then entry, then before hooks (reversed).
+      # reverse_each ensures first registered = outermost in MRO.
+      #
+      # @return [void]
+      def include_entries_with_hooks
         @matrix.entries.each do |entry|
-          @hooks.before(entry.key).each { |hook| @target_class.include(hook.extension) }
-          @hooks.after(entry.key).each { |hook| @target_class.include(hook.extension) }
+          @hooks.after(entry.key).reverse_each { |hook| @target_class.include(hook.extension) }
+          @target_class.include(entry.extension)
+          @hooks.before(entry.key).reverse_each { |hook| @target_class.include(hook.extension) }
+        end
+      end
+
+      # Includes only hook extensions without entries.
+      #
+      # Used when entries are already in ancestors (multi-level inheritance).
+      #
+      # @return [void]
+      def include_hooks_only
+        @matrix.entries.each do |entry|
+          @hooks.before(entry.key).reverse_each { |hook| @target_class.include(hook.extension) }
+          @hooks.after(entry.key).reverse_each { |hook| @target_class.include(hook.extension) }
         end
       end
     end

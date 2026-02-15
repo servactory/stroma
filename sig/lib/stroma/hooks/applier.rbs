@@ -10,6 +10,14 @@ module Stroma
       def initialize: (Class target_class, Collection hooks, Matrix matrix) -> void
 
       def apply!: () -> void
+
+      private
+
+      def entries_in_ancestors?: () -> bool
+
+      def include_entries_with_hooks: () -> void
+
+      def include_hooks_only: () -> void
     end
   end
 end
