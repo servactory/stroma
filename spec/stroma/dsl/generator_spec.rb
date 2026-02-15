@@ -197,11 +197,27 @@ RSpec.describe Stroma::DSL::Generator do
 
       it "grandchild inherits hooks from all levels", :aggregate_failures do
         grandchild = Class.new(leaf_class)
+        ancestors = grandchild.ancestors
 
-        expect(grandchild.ancestors).to include(auth_module)
-        expect(grandchild.ancestors).to include(logging_module)
-        expect(grandchild.ancestors).to include(inputs_dsl)
-        expect(grandchild.ancestors).to include(outputs_dsl)
+        expect(ancestors).to include(auth_module, logging_module, inputs_dsl, outputs_dsl)
+      end
+
+      it "preserves before hook position relative to entry in grandchild" do
+        grandchild = Class.new(leaf_class)
+        ancestors = grandchild.ancestors
+
+        expect(ancestors.index(auth_module)).to be < ancestors.index(inputs_dsl)
+      end
+
+      # Ruby's Module#include cannot position a new module below an inherited module.
+      # After hooks registered at parent level are placed above inherited entries in
+      # grandchild MRO. This does not affect phase execution order (controlled by
+      # the orchestrator), only the super call chain.
+      it "after hook from parent level is above inherited entry in grandchild MRO" do
+        grandchild = Class.new(leaf_class)
+        ancestors = grandchild.ancestors
+
+        expect(ancestors.index(logging_module)).to be < ancestors.index(inputs_dsl)
       end
     end
 
