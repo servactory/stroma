@@ -144,7 +144,7 @@ module Authorization
 end
 ```
 
-`ClassMethods` provides the class-level DSL. `InstanceMethods` hooks into the call chain via `super`. Split them into separate files as the extension grows.
+`ClassMethods` provides the class-level DSL. `InstanceMethods` overrides the orchestrator method defined by your library (here `call`) and delegates via `super`. Split them into separate files as the extension grows.
 
 ### Register the extension
 
