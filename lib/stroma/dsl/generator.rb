@@ -16,6 +16,19 @@ module Stroma
     # - ServiceClass gets @stroma_matrix (same reference)
     # - ServiceClass gets @stroma (unique State per class)
     #
+    # ## Deferred Entry Inclusion
+    #
+    # Entry extensions are NOT included via `Module#include` at the base class level.
+    # Instead, only the `self.included` callback is fired (via `send(:included, base)`)
+    # to set up ClassMethods, constants, etc. The actual module insertion into the
+    # ancestor chain (`append_features`) is deferred until {Hooks::Applier} interleaves
+    # entries with hooks in child classes.
+    #
+    # **Contract:** Entry extensions MUST implement `self.included` as idempotent.
+    # The callback fires twice per entry per class hierarchy:
+    # 1. At base class creation (deferred, via `send(:included, base)`)
+    # 2. At child class creation (real, via `include` in {Hooks::Applier})
+    #
     # ## Usage
     #
     # ```ruby
