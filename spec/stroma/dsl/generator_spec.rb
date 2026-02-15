@@ -170,6 +170,74 @@ RSpec.describe Stroma::DSL::Generator do
     end
   end
 
+  describe "multi-level with hooks at every level" do
+    let(:auth_module) { Module.new }
+    let(:logging_module) { Module.new }
+
+    let(:base_class) do
+      mtx = matrix
+      Class.new { include mtx.dsl }
+    end
+
+    let(:mid_class) do
+      base = base_class
+      auth = auth_module
+      Class.new(base) do
+        extensions do
+          before :inputs, auth
+        end
+      end
+    end
+
+    let(:leaf_class) do
+      mid = mid_class
+      logging = logging_module
+      Class.new(mid) do
+        extensions do
+          after :inputs, logging
+        end
+      end
+    end
+
+    it "leaf inherits hooks from all levels", :aggregate_failures do
+      grandchild = Class.new(leaf_class)
+      ancestors = grandchild.ancestors
+
+      expect(ancestors).to include(auth_module)
+      expect(ancestors).to include(logging_module)
+      expect(ancestors).to include(inputs_dsl)
+      expect(ancestors).to include(outputs_dsl)
+    end
+  end
+
+  describe "grandchild without own hooks" do
+    let(:auth_module) { Module.new }
+
+    let(:base_class) do
+      mtx = matrix
+      Class.new { include mtx.dsl }
+    end
+
+    let(:mid_class) do
+      base = base_class
+      auth = auth_module
+      Class.new(base) do
+        extensions do
+          before :inputs, auth
+        end
+      end
+    end
+
+    it "entries propagate to grandchild via ancestors", :aggregate_failures do
+      child = Class.new(mid_class)
+      grandchild = Class.new(child)
+
+      expect(grandchild.ancestors).to include(inputs_dsl)
+      expect(grandchild.ancestors).to include(outputs_dsl)
+      expect(grandchild.ancestors).to include(auth_module)
+    end
+  end
+
   describe "inheritance isolation" do
     let(:extension_module) { Module.new }
 

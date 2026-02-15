@@ -156,25 +156,55 @@ RSpec.describe Stroma::Hooks::Applier do
     end
 
     context "when entries are already in ancestors" do
-      let(:before_ext) { Module.new }
-
       before do
         target_class.include(outputs_dsl)
         target_class.include(inputs_dsl)
-        hooks.add(:before, :inputs, before_ext)
       end
 
-      it "includes hook extensions" do
-        applier.apply!
-        expect(target_class.ancestors).to include(before_ext)
+      context "with a before hook" do
+        let(:before_ext) { Module.new }
+
+        before { hooks.add(:before, :inputs, before_ext) }
+
+        it "includes hook extensions" do
+          applier.apply!
+          expect(target_class.ancestors).to include(before_ext)
+        end
+
+        it "does not duplicate entries in ancestors" do
+          count_before = target_class.ancestors.count { |a| a == inputs_dsl }
+          applier.apply!
+          count_after = target_class.ancestors.count { |a| a == inputs_dsl }
+
+          expect(count_after).to eq(count_before)
+        end
       end
 
-      it "does not duplicate entries in ancestors" do
-        count_before = target_class.ancestors.count { |a| a == inputs_dsl }
-        applier.apply!
-        count_after = target_class.ancestors.count { |a| a == inputs_dsl }
+      context "with an after hook" do
+        let(:after_ext) { Module.new }
 
-        expect(count_after).to eq(count_before)
+        before { hooks.add(:after, :inputs, after_ext) }
+
+        it "includes after hook extensions" do
+          applier.apply!
+          expect(target_class.ancestors).to include(after_ext)
+        end
+      end
+
+      context "with both before and after hooks" do
+        let(:before_ext) { Module.new }
+        let(:after_ext) { Module.new }
+
+        before do
+          hooks.add(:before, :inputs, before_ext)
+          hooks.add(:after, :inputs, after_ext)
+        end
+
+        it "includes both hook types", :aggregate_failures do
+          applier.apply!
+          expect(target_class.ancestors).to include(before_ext)
+          expect(target_class.ancestors).to include(after_ext)
+        end
       end
     end
   end
