@@ -195,14 +195,13 @@ RSpec.describe Stroma::DSL::Generator do
         end
       end
 
-      let(:grandchild) { Class.new(leaf_class) }
-
       it "includes hooks and entries from all levels", :aggregate_failures do
-        expect(grandchild.ancestors).to include(auth_module, logging_module, inputs_dsl, outputs_dsl)
+        ancestors = Class.new(leaf_class).ancestors
+        expect(ancestors).to include(auth_module, logging_module, inputs_dsl, outputs_dsl)
       end
 
       it "positions before hook above entry in MRO" do
-        ancestors = grandchild.ancestors
+        ancestors = Class.new(leaf_class).ancestors
         expect(ancestors.index(auth_module)).to be < ancestors.index(inputs_dsl)
       end
 
@@ -211,7 +210,7 @@ RSpec.describe Stroma::DSL::Generator do
       # grandchild MRO. This does not affect phase execution order (controlled by
       # the orchestrator), only the super call chain.
       it "positions cross-level after hook above entry in MRO" do
-        ancestors = grandchild.ancestors
+        ancestors = Class.new(leaf_class).ancestors
         expect(ancestors.index(logging_module)).to be < ancestors.index(inputs_dsl)
       end
     end
