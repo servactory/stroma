@@ -75,6 +75,12 @@ module Stroma
               base.instance_variable_set(:@stroma_matrix, mtx)
               base.instance_variable_set(:@stroma, State.new)
 
+              # Deferred inclusion: triggers `included` callback without `append_features`.
+              # The callback runs ClassMethods/Workspace setup on base.
+              # `append_features` (actual module insertion into ancestors) is deferred
+              # until Applier interleaves entries with hooks in child classes.
+              # NOTE: `included` will fire again when Applier calls `include` on child,
+              # so entry extensions must design `self.included` as idempotent.
               mtx.entries.each { |entry| entry.extension.send(:included, base) }
             end
           end
