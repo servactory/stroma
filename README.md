@@ -123,25 +123,28 @@ Extensions are standard Ruby modules that hook into the DSL lifecycle. Stroma pl
 
 ```ruby
 module Authorization
-  # Class-level DSL method — available in service definitions
   def self.included(base)
-    base.class_eval do
-      def self.authorize_with(method_name)
-        stroma.settings[:actions][:authorization][:method_name] = method_name
-      end
+    base.extend(ClassMethods)
+    base.include(InstanceMethods)
+  end
+
+  module ClassMethods
+    def authorize_with(method_name)
+      stroma.settings[:actions][:authorization][:method_name] = method_name
     end
   end
 
-  # Instance-level hook — runs when the service is called
-  def call(...)
-    method_name = self.class.stroma.settings[:actions][:authorization][:method_name]
-    send(method_name) if method_name
-    super
+  module InstanceMethods
+    def call(...)
+      method_name = self.class.stroma.settings[:actions][:authorization][:method_name]
+      send(method_name) if method_name
+      super
+    end
   end
 end
 ```
 
-`self.included` adds a class-level DSL method. The `call(...)` method reads the stored setting and delegates via `super`.
+`ClassMethods` provides the class-level DSL. `InstanceMethods` hooks into the call chain via `super`. Split them into separate files as the extension grows.
 
 ### Register the extension
 
@@ -162,6 +165,7 @@ class UserService < ApplicationService
   authorize_with :check_permissions
 
   input :email, type: String
+
   make :create_user
 
   private
