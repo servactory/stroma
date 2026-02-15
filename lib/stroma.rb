@@ -2,8 +2,6 @@
 
 require "zeitwerk"
 
-require "active_support/all"
-
 loader = Zeitwerk::Loader.for_gem
 loader.ignore("#{__dir__}/stroma/test_kit/rspec")
 loader.inflector.inflect(
