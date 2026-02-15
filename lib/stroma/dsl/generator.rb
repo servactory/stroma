@@ -75,7 +75,7 @@ module Stroma
               base.instance_variable_set(:@stroma_matrix, mtx)
               base.instance_variable_set(:@stroma, State.new)
 
-              mtx.entries.each { |entry| base.include(entry.extension) }
+              mtx.entries.each { |entry| entry.extension.send(:included, base) }
             end
           end
 

@@ -50,16 +50,54 @@ module Stroma
 
       # Applies all registered hooks to the target class.
       #
-      # For each registry entry, includes before hooks first,
-      # then after hooks. Does nothing if hooks collection is empty.
+      # Three modes based on current state:
+      # - No hooks: return immediately (defer entry inclusion)
+      # - Entries already in ancestors: include only hooks
+      # - Entries not in ancestors: interleave entries with hooks
       #
       # @return [void]
       def apply!
         return if @hooks.empty?
 
+        if entries_in_ancestors?
+          include_hooks_only
+        else
+          include_entries_with_hooks
+        end
+      end
+
+      private
+
+      # Checks whether any entry extension is already in the target class ancestors.
+      #
+      # @return [Boolean]
+      def entries_in_ancestors?
+        @matrix.entries.any? { |e| @target_class.ancestors.include?(e.extension) }
+      end
+
+      # Includes entries interleaved with their hooks.
+      #
+      # For each entry: after hooks first (reversed), then entry, then before hooks (reversed).
+      # reverse_each ensures first registered = outermost in MRO.
+      #
+      # @return [void]
+      def include_entries_with_hooks
         @matrix.entries.each do |entry|
-          @hooks.before(entry.key).each { |hook| @target_class.include(hook.extension) }
-          @hooks.after(entry.key).each { |hook| @target_class.include(hook.extension) }
+          @hooks.after(entry.key).reverse_each { |hook| @target_class.include(hook.extension) }
+          @target_class.include(entry.extension)
+          @hooks.before(entry.key).reverse_each { |hook| @target_class.include(hook.extension) }
+        end
+      end
+
+      # Includes only hook extensions without entries.
+      #
+      # Used when entries are already in ancestors (multi-level inheritance).
+      #
+      # @return [void]
+      def include_hooks_only
+        @matrix.entries.each do |entry|
+          @hooks.before(entry.key).reverse_each { |hook| @target_class.include(hook.extension) }
+          @hooks.after(entry.key).reverse_each { |hook| @target_class.include(hook.extension) }
         end
       end
     end
