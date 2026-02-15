@@ -107,7 +107,7 @@ RSpec.describe Stroma::DSL::Generator do
       expect(ancestors.index(extension_module)).to be < ancestors.index(inputs_dsl)
     end
 
-    it "child has extension method", :aggregate_failures do
+    it "propagates extension callback to child", :aggregate_failures do
       expect(child_class).to respond_to(:extension_method)
       expect(child_class.extension_method).to eq(:extension_result)
     end
@@ -149,12 +149,12 @@ RSpec.describe Stroma::DSL::Generator do
 
       let(:leaf_class) { Class.new(mid_class) }
 
-      it "defers entries in base (no hooks)", :aggregate_failures do
+      it "does not include entries in base", :aggregate_failures do
         expect(base_class.ancestors).not_to include(inputs_dsl)
         expect(base_class.ancestors).not_to include(outputs_dsl)
       end
 
-      it "defers entries in mid class (hooks registered but not applied yet)", :aggregate_failures do
+      it "does not include entries in mid class", :aggregate_failures do
         expect(mid_class.ancestors).not_to include(inputs_dsl)
         expect(mid_class.ancestors).not_to include(outputs_dsl)
       end
@@ -166,7 +166,7 @@ RSpec.describe Stroma::DSL::Generator do
         expect(ancestors.index(auth_module)).to be < ancestors.index(inputs_dsl)
       end
 
-      it "propagates hook class methods to leaf via interleaving" do
+      it "propagates hook callbacks to leaf" do
         expect(leaf_class).to respond_to(:auth_configured)
       end
     end
@@ -195,17 +195,14 @@ RSpec.describe Stroma::DSL::Generator do
         end
       end
 
-      it "grandchild inherits hooks from all levels", :aggregate_failures do
-        grandchild = Class.new(leaf_class)
-        ancestors = grandchild.ancestors
+      let(:grandchild) { Class.new(leaf_class) }
 
-        expect(ancestors).to include(auth_module, logging_module, inputs_dsl, outputs_dsl)
+      it "includes hooks and entries from all levels", :aggregate_failures do
+        expect(grandchild.ancestors).to include(auth_module, logging_module, inputs_dsl, outputs_dsl)
       end
 
-      it "preserves before hook position relative to entry in grandchild" do
-        grandchild = Class.new(leaf_class)
+      it "positions before hook above entry in MRO" do
         ancestors = grandchild.ancestors
-
         expect(ancestors.index(auth_module)).to be < ancestors.index(inputs_dsl)
       end
 
@@ -213,10 +210,8 @@ RSpec.describe Stroma::DSL::Generator do
       # After hooks registered at parent level are placed above inherited entries in
       # grandchild MRO. This does not affect phase execution order (controlled by
       # the orchestrator), only the super call chain.
-      it "after hook from parent level is above inherited entry in grandchild MRO" do
-        grandchild = Class.new(leaf_class)
+      it "positions cross-level after hook above entry in MRO" do
         ancestors = grandchild.ancestors
-
         expect(ancestors.index(logging_module)).to be < ancestors.index(inputs_dsl)
       end
     end
@@ -237,7 +232,7 @@ RSpec.describe Stroma::DSL::Generator do
       let(:child_class) { Class.new(mid_class) }
       let(:grandchild) { Class.new(child_class) }
 
-      it "entries propagate to grandchild via ancestors", :aggregate_failures do
+      it "propagates entries and hooks to grandchild", :aggregate_failures do
         expect(grandchild.ancestors).to include(inputs_dsl)
         expect(grandchild.ancestors).to include(outputs_dsl)
         expect(grandchild.ancestors).to include(auth_module)
