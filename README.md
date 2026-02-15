@@ -115,6 +115,69 @@ end
 
 Extensions allow you to add cross-cutting concerns like transactions, authorization, and rollback support. See [extension examples](https://github.com/servactory/servactory/tree/main/examples/application_service/extensions) for implementation details.
 
+## 🧩 Building Extensions
+
+Extensions are standard Ruby modules that hook into the DSL lifecycle. Stroma places them at the correct position in the method chain, so `super` naturally flows through all registered extensions.
+
+### Define an extension
+
+```ruby
+module Authorization
+  # Class-level DSL method — available in service definitions
+  def self.included(base)
+    base.class_eval do
+      def self.authorize_with(method_name)
+        stroma.settings[:actions][:authorization][:method_name] = method_name
+      end
+    end
+  end
+
+  # Instance-level hook — runs when the service is called
+  def call(...)
+    method_name = self.class.stroma.settings[:actions][:authorization][:method_name]
+    send(method_name) if method_name
+    super
+  end
+end
+```
+
+`self.included` adds a class-level DSL method. The `call(...)` method reads the stored setting and delegates via `super`.
+
+### Register the extension
+
+```ruby
+class ApplicationService < MyLib::Base
+  extensions do
+    before :actions, Authorization
+  end
+end
+```
+
+`before` places the module so its `call` executes **before** the `:actions` entry. Use `after` for post-processing. Multiple modules in one call: `before :actions, ModA, ModB`.
+
+### Use in a service
+
+```ruby
+class UserService < ApplicationService
+  authorize_with :check_permissions
+
+  input :email, type: String
+  make :create_user
+
+  private
+
+  def check_permissions
+    # authorization logic
+  end
+
+  def create_user
+    # runs only after check_permissions passes
+  end
+end
+```
+
+Settings and hooks are deep-copied on inheritance — each subclass has independent configuration.
+
 ## 💎 Projects Using Stroma
 
 - [Servactory](https://github.com/servactory/servactory) — Service objects framework for Ruby applications
